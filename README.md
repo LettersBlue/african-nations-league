@@ -13,8 +13,8 @@ Once deployed, you can access the application at the URL above. **No setup requi
 ### Login Credentials
 
 **Administrator Account:**
-- **Email**: `admin@african-nations-league.com`
-- **Password**: `admin123`
+- **Email**: `admin@r2g.com`
+- **Password**: `123456`
 
 **Representative Accounts:**
 - Register your own account at `/register` and select "Representative" role
@@ -83,7 +83,9 @@ This section explains how to run the application locally on your machine. **Note
    - Deploy indexes: `firestore.indexes.json`
 
 5. **Set up API keys**
-   - Get Groq API key from [console.groq.com](https://console.groq.com)
+   - Get Groq API key from [console.groq.com](https://console.groq.com) (free tier available for testing)
+     - Free tier: Limited requests per minute (check console for limits)
+     - Model used: `llama-3.1-8b` (free tier friendly) or set `GROQ_MODEL=llama-3.1-70b-versatile` for paid tier
    - Get Resend API key from [resend.com](https://resend.com)
 
 6. **Start the development server**
@@ -199,7 +201,7 @@ The application is deployed on **Vercel**. When deployed, all environment variab
 For questions regarding this submission:
 - **Repository**: https://github.com/LettersBlue/african-nations-league
 - **Live Deployment**: _To be deployed - URL will be provided after deployment_
-- **Admin Login**: admin@african-nations-league.com / admin123
+- **Admin Login**: admin@r2g.com / 123456
 
 ---
 
