@@ -1,0 +1,108 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+.pnp.*
+
+# testing
+/coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# next.js
+/.next/
+/out/
+.next/
+out/
+
+# production
+/build
+dist/
+
+# misc
+.DS_Store
+*.pem
+*.log
+*.lock
+Thumbs.db
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# local env files
+.env*.local
+.env*.local.*
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+.env.local.update.txt
+.env.local.backup
+
+# vercel
+.vercel
+.vercel/*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+*.tsbuildinfo.next*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cursor/
+*.sublime-project
+*.sublime-workspace
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+firebase-*.json
+!firebase.json
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+.playwright-mcp/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+.cache/
+
+# Package managers (keep lock files for consistency)
+# package-lock.json - Keep this for dependency consistency
+# yarn.lock - Keep if using yarn
+# pnpm-lock.yaml - Keep if using pnpm
+
+# Build outputs
+.turbo/
+.swc/
