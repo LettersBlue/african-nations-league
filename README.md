@@ -199,7 +199,6 @@ The application is deployed on **Vercel**. When deployed, all environment variab
 ## 📧 Contact & Support
 
 For questions regarding this submission:
-- **Repository**: https://github.com/LettersBlue/african-nations-league
 - **Live Deployment**: _To be deployed - URL will be provided after deployment_
 - **Admin Login**: admin@r2g.com / 123456
 
@@ -208,3 +207,5 @@ For questions regarding this submission:
 **African Nations League Tournament Platform** 
 
 Built for INF4001N Entrance Exam 2026 | University of Cape Town
+
+Made with ❤️ by Amahle Quvile
