@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import { LayoutDashboard, Users, Trophy, Users2, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, Users2, LogOut, Menu, X, Eye } from 'lucide-react';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -28,6 +28,7 @@ export default function AdminLayout({ children, activePage = 'dashboard' }: Admi
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, id: 'dashboard' },
     { name: 'User Management', href: '/admin/settings', icon: Users, id: 'settings' },
     { name: 'Registered Teams', href: '/admin/teams', icon: Users2, id: 'teams' },
+    { name: 'View Public Bracket', href: '/', icon: Eye, id: 'bracket' },
   ];
 
   return (
@@ -104,7 +105,7 @@ export default function AdminLayout({ children, activePage = 'dashboard' }: Admi
           <div className="flex items-center justify-between h-16 px-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-gray-600 hover:text-gray-900"
+              className="lg:hidden text-white hover:text-gray-200"
             >
               <Menu className="h-6 w-6" />
             </button>

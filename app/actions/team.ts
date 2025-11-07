@@ -5,6 +5,7 @@ import { generatePlayerRatings, calculateTeamRating, validateTeamComposition } f
 import { Team, Player, TeamRegistrationForm } from '@/types';
 import { adminDb } from '@/lib/firebase/admin';
 import { Timestamp } from 'firebase-admin/firestore';
+import { validateTournamentExists, validateUserExists } from '@/lib/firebase/referential-integrity';
 
 /**
  * Create a team - validates and saves to Firestore (uses Admin SDK)
@@ -21,6 +22,18 @@ export async function createTeam(
       return { success: false, error: 'Failed to initialize tournament. Please contact an administrator.' };
     }
     const tournament = tournamentResult.tournament;
+    
+    // Validate referential integrity: tournament exists
+    const tournamentExists = await validateTournamentExists(tournament.id);
+    if (!tournamentExists) {
+      return { success: false, error: 'Tournament does not exist' };
+    }
+    
+    // Validate referential integrity: user exists
+    const userExists = await validateUserExists(representativeUid);
+    if (!userExists) {
+      return { success: false, error: 'User does not exist' };
+    }
 
     // Check if tournament is in registration phase
     if (tournament.status !== 'registration') {
@@ -128,6 +141,7 @@ export async function createTeam(
     };
 
     // Save to Firestore using Admin SDK
+    // Note: teams.tournamentId is the source of truth - tournament.teamIds is always derived from teams
     const teamRef = await adminDb.collection('teams').add(teamData);
 
     return {
@@ -138,6 +152,32 @@ export async function createTeam(
   } catch (error: any) {
     console.error('Error creating team:', error);
     return { success: false, error: error.message || 'Failed to register team' };
+  }
+}
+
+/**
+ * Get all teams by tournament ID (uses Admin SDK)
+ */
+export async function getTeamsByTournament(tournamentId: string) {
+  try {
+    const teamsSnapshot = await adminDb.collection('teams')
+      .where('tournamentId', '==', tournamentId)
+      .get();
+    
+    const teams = teamsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : undefined,
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : undefined,
+      } as Team;
+    });
+    
+    return { success: true, teams };
+  } catch (error: any) {
+    console.error('Error getting teams by tournament:', error);
+    return { success: false, error: error.message, teams: [] };
   }
 }
 
@@ -301,6 +341,16 @@ export async function updateTeam(
       updatedAt: Timestamp.now(),
     };
 
+    // Validate referential integrity: team exists and belongs to tournament
+    // teamDoc already fetched above, reuse it
+    const existingTeamData = teamData;
+    if (existingTeamData?.tournamentId) {
+      const tournamentExists = await validateTournamentExists(existingTeamData.tournamentId);
+      if (!tournamentExists) {
+        return { success: false, error: 'Team references a non-existent tournament' };
+      }
+    }
+
     // Update in Firestore using Admin SDK
     await adminDb.collection('teams').doc(teamId).update(updates);
 
@@ -311,5 +361,112 @@ export async function updateTeam(
   } catch (error: any) {
     console.error('Error updating team:', error);
     return { success: false, error: error.message || 'Failed to update team' };
+  }
+}
+
+/**
+ * Update team with latest squad data from fetchRealTimeTeamData
+ * Uses the application's existing method to get the most recent team squads
+ */
+export async function updateTeamWithLatestSquad(teamId: string) {
+  try {
+    // Get team to verify it exists
+    const teamDoc = await adminDb.collection('teams').doc(teamId).get();
+    if (!teamDoc.exists) {
+      return { success: false, error: 'Team not found' };
+    }
+
+    const teamData = teamDoc.data() as Team;
+    const country = teamData.country;
+
+    // Import the processing function
+    const { processSquadDataForUpdate } = await import('@/scripts/update-squads');
+    
+    // Process squad data using the application's fetchRealTimeTeamData method
+    const result = await processSquadDataForUpdate(country, teamData);
+    
+    if (!result.success || !result.data) {
+      return {
+        success: false,
+        error: result.error || 'Failed to fetch and process squad data',
+      };
+    }
+
+    const { players, starting11Ids, overallRating, managerName } = result.data;
+
+    // Prepare updates (preserve stats and tournament info)
+    const updates: any = {
+      players,
+      starting11Ids,
+      overallRating,
+      managerName,
+      updatedAt: Timestamp.now(),
+    };
+
+    // Update in Firestore using Admin SDK
+    await adminDb.collection('teams').doc(teamId).update(updates);
+
+    return {
+      success: true,
+      message: `Team ${country} updated with latest squad data!`,
+      data: {
+        playersCount: players.length,
+        managerName,
+        overallRating,
+      },
+    };
+  } catch (error: any) {
+    console.error('Error updating team with latest squad:', error);
+    return { success: false, error: error.message || 'Failed to update team with latest squad' };
+  }
+}
+
+/**
+ * Update all teams with latest squad data
+ */
+export async function updateAllTeamsWithLatestSquads() {
+  try {
+    // Get all teams from Firestore
+    const teamsSnapshot = await adminDb.collection('teams').get();
+    
+    if (teamsSnapshot.empty) {
+      return { success: false, error: 'No teams found in database' };
+    }
+
+    const results = [];
+    
+    for (const teamDoc of teamsSnapshot.docs) {
+      const teamId = teamDoc.id;
+      const country = (teamDoc.data() as Team).country;
+      
+      try {
+        const result = await updateTeamWithLatestSquad(teamId);
+        results.push({
+          country,
+          teamId,
+          success: result.success,
+          error: result.error,
+        });
+      } catch (error: any) {
+        results.push({
+          country,
+          teamId,
+          success: false,
+          error: error.message,
+        });
+      }
+    }
+
+    const successCount = results.filter(r => r.success).length;
+    const failCount = results.filter(r => !r.success).length;
+
+    return {
+      success: true,
+      message: `Updated ${successCount} teams successfully, ${failCount} failed`,
+      results,
+    };
+  } catch (error: any) {
+    console.error('Error updating all teams:', error);
+    return { success: false, error: error.message || 'Failed to update all teams' };
   }
 }

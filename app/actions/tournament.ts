@@ -7,6 +7,7 @@ import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { generateBracket, getBracketPosition } from '@/lib/utils/bracket';
 import { playMatch } from '@/app/actions/match';
 import { getTeam } from '@/app/actions/team';
+import { validateTeamsInTournament, cleanupTournamentBracketReferences } from '@/lib/firebase/referential-integrity';
 
 /**
  * Get current tournament status (uses Admin SDK to bypass security rules)
@@ -24,11 +25,17 @@ export async function getTournamentStatus() {
     if (!tournamentsSnapshot.empty) {
       const doc = tournamentsSnapshot.docs[0];
       const data = doc.data();
+      // Always fetch teams from database instead of using teamIds from tournament document
+      const teamsSnapshot = await adminDb.collection('teams')
+        .where('tournamentId', '==', doc.id)
+        .get();
+      const actualTeamIds = teamsSnapshot.docs.map(teamDoc => teamDoc.id);
+      
       tournament = {
         id: doc.id,
         name: data.name || 'African Nations League 2026',
         status: data.status || 'registration',
-        teamIds: data.teamIds || [],
+        teamIds: actualTeamIds, // Always use teams from database
         currentRound: data.currentRound || null,
         bracket: data.bracket || {
           quarterFinals: [],
@@ -47,10 +54,10 @@ export async function getTournamentStatus() {
     
     if (!tournament) {
       // Create default tournament if none exists (using Admin SDK to bypass security rules)
+      // Note: teamIds is NOT stored - it's always derived from teams collection
       const defaultTournament = {
         name: 'African Nations League 2026',
         status: 'registration' as TournamentStatus,
-        teamIds: [] as string[],
         currentRound: null as string | null,
         bracket: {
           quarterFinals: [] as any[],
@@ -79,6 +86,38 @@ export async function getTournamentStatus() {
     
     const teamCount = teamsSnapshot.size;
 
+    // Validate: Tournament cannot be "active" without exactly 8 teams
+    // If tournament is active but doesn't have 8 teams, reset it to registration
+    if (tournament.status === 'active' && teamCount !== 8) {
+      console.warn(`Tournament ${tournament.id} is active but only has ${teamCount} teams. Resetting to registration.`);
+      await adminDb.collection('tournaments').doc(tournament.id).update({
+        status: 'registration',
+        startedAt: FieldValue.delete(),
+        currentRound: null,
+        bracket: {
+          quarterFinals: [],
+          semiFinals: [],
+          final: {
+            matchId: '',
+            team1Id: '',
+            team2Id: '',
+          },
+        },
+      });
+      tournament.status = 'registration';
+      tournament.startedAt = undefined;
+      tournament.currentRound = null;
+      tournament.bracket = {
+        quarterFinals: [],
+        semiFinals: [],
+        final: {
+          matchId: '',
+          team1Id: '',
+          team2Id: '',
+        },
+      };
+    }
+
     return {
       success: true,
       tournament: {
@@ -91,6 +130,7 @@ export async function getTournamentStatus() {
     return { success: false, error: error.message };
   }
 }
+
 
 /**
  * Start tournament (admin only)
@@ -107,6 +147,16 @@ export async function startTournament() {
     const teams = await getTeamsByTournament(tournament.id);
     if (teams.length !== 8) {
       return { success: false, error: `Tournament requires exactly 8 teams. Currently have ${teams.length}.` };
+    }
+    
+    // Validate referential integrity: all teams belong to this tournament
+    const teamIds = teams.map(t => t.id);
+    const validation = await validateTeamsInTournament(teamIds, tournament.id);
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: `Referential integrity error: ${validation.errors.join(', ')}`,
+      };
     }
 
     // Generate bracket
@@ -204,10 +254,10 @@ export async function startTournament() {
     (bracket.final as any).matchId = finalMatchRef.id;
 
     // Update tournament with bracket and status using Admin SDK
+    // Note: teamIds is NOT stored - it's always derived from teams collection (teams.tournamentId)
     await adminDb.collection('tournaments').doc(tournament.id).update({
       status: 'active',
       startedAt: Timestamp.now(),
-      teamIds: teams.map(t => t.id),
       bracket: bracket,
       currentRound: 'quarterFinal',
     });
@@ -358,12 +408,12 @@ export async function resetTournament() {
     }
 
     // Reset tournament using Admin SDK
+    // Note: teamIds is NOT stored - it's always derived from teams collection (teams.tournamentId)
     await adminDb.collection('tournaments').doc(tournament.id).update({
       status: 'registration',
       startedAt: FieldValue.delete(),
       completedAt: FieldValue.delete(),
       currentRound: null,
-      teamIds: [],
       bracket: {
         quarterFinals: [],
         semiFinals: [],
@@ -379,6 +429,93 @@ export async function resetTournament() {
 
     return { success: true, message: 'Tournament reset successfully and archived to history!' };
   } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Clean up tournament by removing deleted team references
+ * Always syncs teamIds from actual teams in database
+ */
+export async function cleanupTournament() {
+  try {
+    const tournamentResult = await getTournamentStatus();
+    if (!tournamentResult.success || !tournamentResult.tournament) {
+      return { success: false, error: 'Tournament not found' };
+    }
+
+    const tournament = tournamentResult.tournament;
+    
+    // Get actual teams from database
+    const teamsSnapshot = await adminDb.collection('teams')
+      .where('tournamentId', '==', tournament.id)
+      .get();
+    
+    const actualTeamIds = teamsSnapshot.docs.map(doc => doc.id);
+    
+    // Clean up bracket - remove references to deleted teams
+    const cleanedBracket = { ...tournament.bracket };
+    
+    // Clean quarterFinals
+    if (cleanedBracket.quarterFinals) {
+      cleanedBracket.quarterFinals = cleanedBracket.quarterFinals
+        .map((qf: any) => {
+          // Remove matches where either team doesn't exist
+          if (qf.team1Id && !actualTeamIds.includes(qf.team1Id)) {
+            return { ...qf, team1Id: '', matchId: qf.matchId || '' };
+          }
+          if (qf.team2Id && !actualTeamIds.includes(qf.team2Id)) {
+            return { ...qf, team2Id: '', matchId: qf.matchId || '' };
+          }
+          return qf;
+        })
+        .filter((qf: any) => {
+          // Keep matches that have at least one valid team or are empty
+          return (qf.team1Id && actualTeamIds.includes(qf.team1Id)) || 
+                 (qf.team2Id && actualTeamIds.includes(qf.team2Id)) ||
+                 (!qf.team1Id && !qf.team2Id);
+        });
+    }
+    
+    // Clean semiFinals
+    if (cleanedBracket.semiFinals) {
+      cleanedBracket.semiFinals = cleanedBracket.semiFinals.map((sf: any) => {
+        if (sf.team1Id && !actualTeamIds.includes(sf.team1Id)) {
+          return { ...sf, team1Id: '' };
+        }
+        if (sf.team2Id && !actualTeamIds.includes(sf.team2Id)) {
+          return { ...sf, team2Id: '' };
+        }
+        return sf;
+      });
+    }
+    
+    // Clean final
+    if (cleanedBracket.final) {
+      if (cleanedBracket.final.team1Id && !actualTeamIds.includes(cleanedBracket.final.team1Id)) {
+        cleanedBracket.final.team1Id = '';
+      }
+      if (cleanedBracket.final.team2Id && !actualTeamIds.includes(cleanedBracket.final.team2Id)) {
+        cleanedBracket.final.team2Id = '';
+      }
+    }
+    
+    // Update tournament with cleaned data
+    // Note: teamIds is NOT stored - it's always derived from teams collection (teams.tournamentId)
+    // Clean up bracket references to remove orphaned team IDs
+    await cleanupTournamentBracketReferences(tournament.id);
+    
+    await adminDb.collection('tournaments').doc(tournament.id).update({
+      bracket: cleanedBracket,
+    });
+    
+    return {
+      success: true,
+      message: `Tournament cleaned up. Removed references to deleted teams. Current teams: ${actualTeamIds.length}`,
+      teamIds: actualTeamIds,
+    };
+  } catch (error: any) {
+    console.error('Error cleaning up tournament:', error);
     return { success: false, error: error.message };
   }
 }

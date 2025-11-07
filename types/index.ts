@@ -72,7 +72,7 @@ export interface Tournament {
   status: TournamentStatus;
   startedAt?: Date;
   completedAt?: Date;
-  teamIds: string[]; // Exactly 8 teams when started
+  teamIds: string[]; // COMPUTED: Always derived from teams collection (teams.tournamentId) - NOT stored in Firestore
   currentRound: MatchRound | null;
   bracket: {
     quarterFinals: Array<{

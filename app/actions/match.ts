@@ -108,7 +108,7 @@ export async function playMatch(matchId: string) {
       try {
         console.log('Attempting to generate commentary with Cohere API (primary)...');
         const aiResult = await generateCohereCommentary(match);
-        commentary = aiResult.commentary;
+      commentary = aiResult.commentary;
         console.log('Successfully generated commentary with Cohere API');
       } catch (cohereError) {
         // If Cohere fails, try Groq (FALLBACK AI provider)

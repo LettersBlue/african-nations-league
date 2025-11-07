@@ -94,10 +94,11 @@
     @apply text-white;
     font-feature-settings: "rlig" 1, "calt" 1;
     color: #ffffff !important; /* Force white text globally */
-    /* Global background image with much stronger dimming overlay */
-    background-color: #1e3a5f !important; /* Deep blue background for transparent areas */
+    /* Global background image with red-green gradient and stronger dimming overlay */
+    background-color: #7f1d1d !important; /* Dark red background for transparent areas */
     background-image: 
-      linear-gradient(rgba(30, 58, 95, 0.95), rgba(30, 58, 95, 0.95)), /* Much stronger dimming overlay (95% opacity) */
+      linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)), /* Stronger dimming overlay (90% black opacity) */
+      linear-gradient(to right, rgba(220, 38, 38, 0.6), rgba(34, 197, 94, 0.6)), /* Red to green gradient */
       url('/Afcon.png') !important;
     background-size: cover !important;
     background-position: center !important;
@@ -107,9 +108,10 @@
   }
   
   html {
-    background-color: #1e3a5f;
+    background-color: #7f1d1d; /* Dark red background for transparent areas */
     background-image: 
-      linear-gradient(rgba(30, 58, 95, 0.95), rgba(30, 58, 95, 0.95)), /* Much stronger dimming overlay (95% opacity) */
+      linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)), /* Stronger dimming overlay (90% black opacity) */
+      linear-gradient(to right, rgba(220, 38, 38, 0.6), rgba(34, 197, 94, 0.6)), /* Red to green gradient */
       url('/Afcon.png');
     background-size: cover;
     background-position: center;
@@ -608,6 +610,14 @@
     @apply max-w-6xl mx-auto;
   }
 
+  /* Disabled Buttons - Global Style */
+  button:disabled,
+  button[disabled] {
+    background-color: #9ca3af !important; /* gray-400 */
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+  }
+
   /* Action Buttons */
   .btn-action-group {
     @apply flex gap-2;
@@ -668,8 +678,8 @@
     transform: scale(1.1) translateY(-1px);
   }
   
-  /* Global link styling for all anchor tags (excluding button-styled links) */
-  a:not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-primary-small):not(.btn-primary-full-width):not(.btn-action-danger):not(.btn-action-success):not(.btn-action-primary):not(.sidebar a) {
+  /* Global link styling for all anchor tags (excluding button-styled links and links inside buttons) */
+  a:not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-primary-small):not(.btn-primary-full-width):not(.btn-action-danger):not(.btn-action-success):not(.btn-action-primary):not(.sidebar a):not(button a):not([role="button"]):not(button *):not([role="button"] *) {
     color: rgba(255, 255, 255, 0.95) !important;
     @apply text-lg font-semibold underline decoration-2;
     text-decoration-color: rgba(255, 255, 255, 0.7);
@@ -679,7 +689,7 @@
   }
   
   /* Hover effects for links (excluding button-styled links and admin sidebar) */
-  a:not(button a):not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-primary-small):not(.btn-primary-full-width):not(.btn-action-danger):not(.btn-action-success):not(.btn-action-primary):not(.sidebar a):hover {
+  a:not(button a):not([role="button"]):not(button *):not([role="button"] *):not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-primary-small):not(.btn-primary-full-width):not(.btn-action-danger):not(.btn-action-success):not(.btn-action-primary):not(.sidebar a):hover {
     color: #ffffff !important;
     text-decoration-color: rgba(255, 255, 255, 1);
     @apply decoration-2;
@@ -779,6 +789,96 @@
   /* Back Button */
   .btn-back {
     @apply inline-flex items-center gap-2 text-blue-600 hover:text-blue-800;
+  }
+
+  /* Admin Back Button - shown when admin views public pages */
+  .btn-back-admin {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors;
+    background-color: rgba(37, 99, 235, 0.2) !important; /* blue-600 with opacity */
+    border: 1px solid rgba(59, 130, 246, 0.4) !important; /* blue-400 */
+    color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+  }
+
+  .btn-back-admin:hover {
+    background-color: rgba(37, 99, 235, 0.3) !important;
+    border-color: rgba(59, 130, 246, 0.6) !important;
+    color: #ffffff !important;
+  }
+
+  /* Admin Back Button with shadcn - enhanced styling */
+  .btn-back-admin-shadcn {
+    background: rgba(37, 99, 235, 0.15) !important; /* blue-600 with opacity */
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important; /* blue-400 */
+    color: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 16px 0 rgba(37, 99, 235, 0.2) !important;
+    transition: all 0.2s ease-in-out !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+  }
+
+  /* Remove underlines from ALL buttons and links styled as buttons - GLOBAL FIX */
+  button,
+  button a,
+  button *,
+  [role="button"],
+  [role="button"] a,
+  [role="button"] *,
+  a[role="button"],
+  /* All anchor tags with button classes */
+  a[class*="btn-"],
+  a.btn-primary,
+  a.btn-secondary,
+  a.btn-outline,
+  a.btn-primary-small,
+  a.btn-primary-full-width,
+  a.btn-action-danger,
+  a.btn-action-success,
+  a.btn-action-primary,
+  /* Shadcn button classes */
+  .btn-back-admin-shadcn,
+  .btn-back-admin-shadcn a,
+  .btn-back-admin-shadcn * {
+    text-decoration: none !important;
+  }
+
+  button:hover,
+  button a:hover,
+  button *:hover,
+  [role="button"]:hover,
+  [role="button"] a:hover,
+  [role="button"] *:hover,
+  a[role="button"]:hover,
+  /* All anchor tags with button classes on hover */
+  a[class*="btn-"]:hover,
+  a.btn-primary:hover,
+  a.btn-secondary:hover,
+  a.btn-outline:hover,
+  a.btn-primary-small:hover,
+  a.btn-primary-full-width:hover,
+  a.btn-action-danger:hover,
+  a.btn-action-success:hover,
+  a.btn-action-primary:hover,
+  /* Shadcn button classes on hover */
+  .btn-back-admin-shadcn:hover,
+  .btn-back-admin-shadcn a:hover,
+  .btn-back-admin-shadcn *:hover {
+    text-decoration: none !important;
+  }
+
+  .btn-back-admin-shadcn:hover {
+    background: rgba(37, 99, 235, 0.25) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.3) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .btn-back-admin-shadcn:active {
+    transform: translateY(0) !important;
   }
 
   /* Footer Actions */
@@ -896,10 +996,10 @@
   }
 
   .sidebar {
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: rgba(15, 23, 42, 0.85) !important; /* slate-900 with high opacity - much darker */
     backdrop-filter: blur(15px) saturate(180%);
     -webkit-backdrop-filter: blur(15px) saturate(180%);
-    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
     @apply fixed inset-y-0 left-0 z-30 w-64 shadow-lg transform transition-transform duration-300 ease-in-out;
   }
 
@@ -925,6 +1025,19 @@
     -webkit-backdrop-filter: blur(15px) saturate(180%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     @apply shadow-sm;
+  }
+
+  /* Hamburger menu button - ensure it's white for visibility */
+  .top-bar button[class*="lg:hidden"] {
+    color: #ffffff !important;
+  }
+
+  .top-bar button[class*="lg:hidden"]:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .top-bar button[class*="lg:hidden"] svg {
+    color: #ffffff !important;
   }
 
   .top-bar-content {

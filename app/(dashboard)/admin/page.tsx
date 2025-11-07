@@ -1,12 +1,13 @@
 'use client';
 
+import '@/app/globals.css';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getUser } from '@/lib/firebase/firestore';
 import { getTournamentStatus, startTournament, resetTournament } from '@/app/actions/tournament';
-import { regenerateAllMatchEvents } from '@/app/actions/regenerate-events';
+// import { regenerateAllMatchEvents } from '@/app/actions/regenerate-events'; // COMMENTED OUT: Not required by exam specification
 import { getTeamsByTournament, getMatchesByTournament } from '@/lib/firebase/firestore';
 import { Users2, Play, RotateCcw, Eye, Trophy } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -105,31 +106,32 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleRegenerateEvents = async () => {
-    if (!window.confirm('Regenerate events for all completed matches? This will add detailed event timelines to existing matches.')) {
-      return;
-    }
+  // COMMENTED OUT: Regenerate Match Events feature - Not required by exam specification
+  // const handleRegenerateEvents = async () => {
+  //   if (!window.confirm('Regenerate events for all completed matches? This will add detailed event timelines to existing matches.')) {
+  //     return;
+  //   }
 
-    setActionLoading(true);
-    setMessage(null);
+  //   setActionLoading(true);
+  //   setMessage(null);
 
-    try {
-      const result = await regenerateAllMatchEvents();
-      if (result.success) {
-        setMessage({ 
-          type: 'success', 
-          text: `Events regenerated! ${result.successCount} matches updated, ${result.errorCount} errors.` 
-        });
-        await loadData();
-      } else {
-        setMessage({ type: 'error', text: result.error || 'Failed to regenerate events' });
-      }
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.message || 'An error occurred' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  //   try {
+  //     const result = await regenerateAllMatchEvents();
+  //     if (result.success) {
+  //       setMessage({ 
+  //         type: 'success', 
+  //         text: `Events regenerated! ${result.successCount} matches updated, ${result.errorCount} errors.` 
+  //       });
+  //       await loadData();
+  //     } else {
+  //       setMessage({ type: 'error', text: result.error || 'Failed to regenerate events' });
+  //     }
+  //   } catch (error: any) {
+  //     setMessage({ type: 'error', text: error.message || 'An error occurred' });
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -163,43 +165,38 @@ export default function AdminDashboard() {
               <Trophy className="h-5 w-5 text-blue-400" />
               <h2 className="heading-quaternary">Tournament Status</h2>
             </div>
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2">
                 <p><span className="font-medium">Status:</span> {tournament?.status === 'registration' ? 'Registration' : tournament?.status === 'active' ? 'Active' : 'Completed'}</p>
                 <p><span className="font-medium">Teams:</span> {tournament?.teamCount || teams.length}/8</p>
-                <p><span className="font-medium">Current Round:</span> {tournament?.currentRound || 'Not Started'}</p>
+                {tournament?.status === 'active' && (
+                  <p><span className="font-medium">Current Round:</span> {tournament?.currentRound || 'Not Started'}</p>
+                )}
               </div>
-            <button 
-                onClick={handleStartTournament}
-                disabled={actionLoading || tournament?.status !== 'registration' || (tournament?.teamCount || teams.length) !== 8}
-              className="btn-primary-full-width btn-icon"
-              >
-              <Play className="h-4 w-4" />
-                {actionLoading ? 'Processing...' : 'Start Tournament'}
-            </button>
           </div>
           
           <div className="card-sm">
             <h2 className="heading-quaternary mb-4">Quick Actions</h2>
               <div className="space-y-2">
-              <a href="/admin/teams" className="btn-outline w-full btn-icon justify-center">
-                <Users2 className="h-4 w-4" />
-                    View All Teams
-                  </a>
-              <a href="/" className="btn-outline w-full btn-icon justify-center">
-                <Eye className="h-4 w-4" />
-                    View Public Bracket
-                  </a>
               <button 
+                onClick={handleStartTournament}
+                disabled={actionLoading || tournament?.status !== 'registration' || teams.length !== 8}
+                className="btn-primary-full-width btn-icon"
+              >
+                <Play className="h-4 w-4" />
+                {actionLoading ? 'Processing...' : 'Start Tournament'}
+              </button>
+              {/* COMMENTED OUT: Regenerate Match Events button - Not required by exam specification */}
+              {/* <button 
                   onClick={handleRegenerateEvents}
                 className="btn-outline w-full btn-icon justify-center"
                   disabled={actionLoading}
                 >
                 <RotateCcw className="h-4 w-4" />
                   {actionLoading ? 'Processing...' : 'Regenerate Match Events'}
-              </button>
+              </button> */}
               <button 
                   onClick={handleResetTournament}
-                  disabled={actionLoading}
+                  disabled={actionLoading || !tournament || tournament?.status === 'registration'}
                 className="btn-action-danger w-full btn-icon justify-center"
                 >
                 <RotateCcw className="h-4 w-4" />

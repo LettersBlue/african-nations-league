@@ -1,8 +1,10 @@
 import Link from "next/link";
 import React, { Suspense } from "react";
-import { getMatchesByTournament, getTeamsByTournament } from "@/lib/firebase/firestore";
+import { getMatchesByTournament } from "@/lib/firebase/firestore";
 import { getTournamentStatus } from "@/app/actions/tournament";
+import { getTeamsByTournament } from "@/app/actions/team";
 import BracketViewWrapper from "@/components/tournament/BracketViewWrapper";
+import AdminBackButton from "@/components/admin/AdminBackButton";
 
 // Country to flag emoji mapping
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -125,7 +127,8 @@ export default async function HomePage() {
   
   if (tournament?.id) {
     matches = await getMatchesByTournament(tournament.id);
-    teams = await getTeamsByTournament(tournament.id);
+    const teamsResult = await getTeamsByTournament(tournament.id);
+    teams = teamsResult.success ? teamsResult.teams || [] : [];
     // Optional: sort by createdAt ascending
     matches.sort((a: any, b: any) => (a.createdAt?.getTime?.() || 0) - (b.createdAt?.getTime?.() || 0));
   }
@@ -138,6 +141,9 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-10">
+        {/* Admin Back Button - only shows if user is admin */}
+        <AdminBackButton />
+        
         <div className="card card-padding mb-8">
           <h1 className="heading-primary">African Nations League</h1>
           <p className="text-description mt-2">Public matches overview</p>

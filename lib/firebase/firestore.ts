@@ -184,11 +184,18 @@ export const getCurrentTournament = async (): Promise<Tournament | null> => {
   if (!querySnapshot.empty) {
     const doc = querySnapshot.docs[0];
     const data = doc.data();
+    const tournamentId = doc.id;
+    
+    // Derive teamIds from teams collection (teams.tournamentId is the source of truth)
+    const teamsQuery = query(teamsCollection, where('tournamentId', '==', tournamentId));
+    const teamsSnapshot = await getDocs(teamsQuery);
+    const teamIds = teamsSnapshot.docs.map(teamDoc => teamDoc.id);
+    
     return {
-      id: doc.id,
+      id: tournamentId,
       name: data.name || 'Tournament',
       status: data.status || 'registration',
-      teamIds: data.teamIds || [],
+      teamIds: teamIds, // Derived from teams collection, not stored
       currentRound: data.currentRound || null,
       bracket: data.bracket || { quarterFinals: [], semiFinals: [], final: { matchId: '', team1Id: '', team2Id: '' } },
       ...data,
@@ -204,9 +211,20 @@ export const getCurrentTournament = async (): Promise<Tournament | null> => {
 export const getTournament = async (tournamentId: string): Promise<Tournament | null> => {
   const tournamentDoc = await getDoc(doc(tournamentsCollection, tournamentId));
   if (tournamentDoc.exists()) {
+    const data = tournamentDoc.data();
+    
+    // Derive teamIds from teams collection (teams.tournamentId is the source of truth)
+    const teamsQuery = query(teamsCollection, where('tournamentId', '==', tournamentId));
+    const teamsSnapshot = await getDocs(teamsQuery);
+    const teamIds = teamsSnapshot.docs.map(teamDoc => teamDoc.id);
+    
     return {
       id: tournamentDoc.id,
-      ...tournamentDoc.data(),
+      ...data,
+      teamIds: teamIds, // Derived from teams collection, not stored
+      createdAt: data.createdAt ? convertTimestamp(data.createdAt) : undefined,
+      startedAt: data.startedAt ? convertTimestamp(data.startedAt) : undefined,
+      completedAt: data.completedAt ? convertTimestamp(data.completedAt) : undefined,
     } as Tournament;
   }
   return null;
