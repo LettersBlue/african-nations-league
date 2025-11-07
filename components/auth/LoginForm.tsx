@@ -6,6 +6,36 @@ import { signInWithEmail, signInWithGoogle } from '@/lib/firebase/auth';
 import { getUser, createUser } from '@/lib/firebase/firestore';
 import Link from 'next/link';
 
+const getFriendlyAuthMessage = (rawMessage: string | undefined) => {
+  if (!rawMessage) {
+    return 'We could not sign you in. Please try again.';
+  }
+
+  const match = rawMessage.match(/\(auth\/([^)]+)\)/);
+  const code = match ? match[1] : rawMessage;
+
+  switch (code) {
+    case 'invalid-credential':
+    case 'wrong-password':
+    case 'user-not-found':
+    case 'invalid-password':
+      return 'The email or password you entered is incorrect. Check your details and try again.';
+    case 'invalid-email':
+      return 'That email address does not look right. Please fix it and try again.';
+    case 'too-many-requests':
+      return 'Too many unsuccessful attempts. Reset your password or try again in a few minutes.';
+    case 'user-disabled':
+      return 'This account has been disabled. Contact support if you think this is a mistake.';
+    case 'network-request-failed':
+      return 'We could not reach the server. Please check your internet connection and try again.';
+    case 'popup-closed-by-user':
+    case 'cancelled-popup-request':
+      return 'The sign-in popup was closed before completing. Please try again.';
+    default:
+      return 'We could not sign you in right now. Please try again shortly.';
+  }
+};
+
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,10 +98,10 @@ export default function LoginForm() {
           return;
         }
       } else {
-        setError(result.error || 'Failed to sign in');
+        setError(getFriendlyAuthMessage(result.error));
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(getFriendlyAuthMessage(err?.message));
     } finally {
       setLoading(false);
     }
@@ -107,14 +137,14 @@ export default function LoginForm() {
         if (result.error?.includes('operation-not-allowed')) {
           setError('Google sign-in is not enabled. Please enable it in Firebase Console: Authentication > Sign-in method > Google > Enable.');
         } else {
-          setError(result.error || 'Failed to sign in with Google');
+          setError(getFriendlyAuthMessage(result.error));
         }
       }
     } catch (err: any) {
       if (err.message?.includes('operation-not-allowed')) {
         setError('Google sign-in is not enabled. Please enable it in Firebase Console: Authentication > Sign-in method > Google > Enable.');
       } else {
-        setError(err.message || 'An error occurred');
+        setError(getFriendlyAuthMessage(err?.message));
       }
     } finally {
       setLoading(false);
@@ -124,7 +154,7 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleEmailLogin} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-100 border border-red-300 text-black px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}
