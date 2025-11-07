@@ -73,13 +73,8 @@ export default function ProgressiveMatchSimulation({ match, onComplete }: Progre
     const loadTeams = async () => {
       try {
         setIsLoadingTeams(true);
-        if (match.team1.stats && match.team2.stats && match.team1.squad && match.team2.squad) {
-          setTeam1Data(match.team1 as Team);
-          setTeam2Data(match.team2 as Team);
-          setIsLoadingTeams(false);
-          return;
-        }
         
+        // Always fetch full team data (match.team1/team2 only has basic info)
         const [team1Result, team2Result] = await Promise.all([
           getTeam(match.team1.id),
           getTeam(match.team2.id),
@@ -88,18 +83,20 @@ export default function ProgressiveMatchSimulation({ match, onComplete }: Progre
         if (team1Result.success && team1Result.team) {
           setTeam1Data(team1Result.team);
         } else {
-          setTeam1Data(match.team1 as Team);
+          console.warn('Failed to load team1 data');
+          setTeam1Data(null);
         }
         
         if (team2Result.success && team2Result.team) {
           setTeam2Data(team2Result.team);
         } else {
-          setTeam2Data(match.team2 as Team);
+          console.warn('Failed to load team2 data');
+          setTeam2Data(null);
         }
       } catch (error) {
-        console.warn('Failed to load team data:', error);
-        setTeam1Data(match.team1 as Team);
-        setTeam2Data(match.team2 as Team);
+        console.error('Error loading team data:', error);
+        setTeam1Data(null);
+        setTeam2Data(null);
       } finally {
         setIsLoadingTeams(false);
       }
@@ -411,7 +408,7 @@ export default function ProgressiveMatchSimulation({ match, onComplete }: Progre
 
   const getEventIcon = (type: MatchEventType) => {
     const iconClass = "h-5 w-5";
-    const icons: Record<MatchEventType, JSX.Element> = {
+    const icons: Record<MatchEventType, React.ReactElement> = {
       kickoff: <Circle className={`${iconClass} text-green-600`} />,
       goal: <Trophy className={`${iconClass} text-yellow-500`} />,
       own_goal: <XCircle className={`${iconClass} text-red-600`} />,

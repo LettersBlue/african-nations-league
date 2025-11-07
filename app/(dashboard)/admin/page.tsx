@@ -135,8 +135,8 @@ export default function AdminDashboard() {
     return (
       <AdminLayout activePage="dashboard">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-muted">Loading...</p>
           </div>
         </div>
@@ -164,59 +164,59 @@ export default function AdminDashboard() {
               <h2 className="heading-quaternary">Tournament Status</h2>
             </div>
             <div className="space-y-2 mb-4">
-              <p><span className="font-medium">Status:</span> {tournament?.status === 'registration' ? 'Registration' : tournament?.status === 'active' ? 'Active' : 'Completed'}</p>
-              <p><span className="font-medium">Teams:</span> {tournament?.teamCount || teams.length}/8</p>
-              <p><span className="font-medium">Current Round:</span> {tournament?.currentRound || 'Not Started'}</p>
-            </div>
+                <p><span className="font-medium">Status:</span> {tournament?.status === 'registration' ? 'Registration' : tournament?.status === 'active' ? 'Active' : 'Completed'}</p>
+                <p><span className="font-medium">Teams:</span> {tournament?.teamCount || teams.length}/8</p>
+                <p><span className="font-medium">Current Round:</span> {tournament?.currentRound || 'Not Started'}</p>
+              </div>
             <button 
-              onClick={handleStartTournament}
-              disabled={actionLoading || tournament?.status !== 'registration' || (tournament?.teamCount || teams.length) !== 8}
+                onClick={handleStartTournament}
+                disabled={actionLoading || tournament?.status !== 'registration' || (tournament?.teamCount || teams.length) !== 8}
               className="btn-primary-full-width btn-icon"
-            >
+              >
               <Play className="h-4 w-4" />
-              {actionLoading ? 'Processing...' : 'Start Tournament'}
+                {actionLoading ? 'Processing...' : 'Start Tournament'}
             </button>
           </div>
           
           <div className="card-sm">
             <h2 className="heading-quaternary mb-4">Quick Actions</h2>
-            <div className="space-y-2">
+              <div className="space-y-2">
               <a href="/admin/teams" className="btn-outline w-full btn-icon justify-center">
                 <Users2 className="h-4 w-4" />
-                View All Teams
-              </a>
+                    View All Teams
+                  </a>
               <a href="/" className="btn-outline w-full btn-icon justify-center">
                 <Eye className="h-4 w-4" />
-                View Public Bracket
-              </a>
+                    View Public Bracket
+                  </a>
               <button 
-                onClick={handleRegenerateEvents}
+                  onClick={handleRegenerateEvents}
                 className="btn-outline w-full btn-icon justify-center"
-                disabled={actionLoading}
-              >
+                  disabled={actionLoading}
+                >
                 <RotateCcw className="h-4 w-4" />
-                {actionLoading ? 'Processing...' : 'Regenerate Match Events'}
+                  {actionLoading ? 'Processing...' : 'Regenerate Match Events'}
               </button>
               <button 
-                onClick={handleResetTournament}
-                disabled={actionLoading}
+                  onClick={handleResetTournament}
+                  disabled={actionLoading}
                 className="btn-action-danger w-full btn-icon justify-center"
-              >
+                >
                 <RotateCcw className="h-4 w-4" />
-                {actionLoading ? 'Processing...' : 'Reset Tournament'}
+                  {actionLoading ? 'Processing...' : 'Reset Tournament'}
               </button>
             </div>
-          </div>
+              </div>
           
           <div className="card-sm">
             <h2 className="heading-quaternary mb-4">Statistics</h2>
-            <div className="space-y-2">
-              <p><span className="font-medium">Total Teams:</span> {teams.length}</p>
-              <p><span className="font-medium">Matches Played:</span> {matches.filter(m => m.status === 'completed').length}</p>
-              <p><span className="font-medium">Matches Pending:</span> {matches.filter(m => m.status === 'pending').length}</p>
-              <p><span className="font-medium">Goals Scored:</span> 0</p>
-              <p><span className="font-medium">Tournament:</span> {tournament?.name || 'N/A'}</p>
-            </div>
+              <div className="space-y-2">
+                <p><span className="font-medium">Total Teams:</span> {teams.length}</p>
+                <p><span className="font-medium">Matches Played:</span> {matches.filter(m => m.status === 'completed').length}</p>
+                <p><span className="font-medium">Matches Pending:</span> {matches.filter(m => m.status === 'pending').length}</p>
+                <p><span className="font-medium">Goals Scored:</span> 0</p>
+                <p><span className="font-medium">Tournament:</span> {tournament?.name || 'N/A'}</p>
+              </div>
           </div>
         </div>
 
@@ -224,12 +224,12 @@ export default function AdminDashboard() {
         {tournament && tournament.status === 'active' && (
           <div className="card card-padding mt-6">
             <h2 className="heading-tertiary mb-6">Tournament Matches</h2>
-            {matches.length === 0 ? (
+              {matches.length === 0 ? (
               <div className="table-empty">
                 <Trophy className="h-16 w-16 mx-auto mb-4 opacity-50" />
                 <p className="text-description">No matches created yet.</p>
-              </div>
-            ) : (
+                </div>
+              ) : (
               <div className="table-container">
                 <table className="table">
                   <thead>
@@ -238,35 +238,35 @@ export default function AdminDashboard() {
                       <th className="table-header-cell">Match</th>
                       <th className="table-header-cell">Status</th>
                       <th className="table-header-cell">Actions</th>
-                    </tr>
-                  </thead>
+                      </tr>
+                    </thead>
                   <tbody>
-                    {matches
-                      .filter(m => {
-                        // Only show matches in current bracket
-                        const bracketMatchIds = new Set<string>();
-                        if (tournament.bracket) {
-                          tournament.bracket.quarterFinals?.forEach((qf: any) => {
-                            if (qf.matchId) bracketMatchIds.add(qf.matchId);
-                          });
-                          tournament.bracket.semiFinals?.forEach((sf: any) => {
-                            if (sf.matchId) bracketMatchIds.add(sf.matchId);
-                          });
-                          if (tournament.bracket.final?.matchId) {
-                            bracketMatchIds.add(tournament.bracket.final.matchId);
+                      {matches
+                        .filter(m => {
+                          // Only show matches in current bracket
+                          const bracketMatchIds = new Set<string>();
+                          if (tournament.bracket) {
+                            tournament.bracket.quarterFinals?.forEach((qf: any) => {
+                              if (qf.matchId) bracketMatchIds.add(qf.matchId);
+                            });
+                            tournament.bracket.semiFinals?.forEach((sf: any) => {
+                              if (sf.matchId) bracketMatchIds.add(sf.matchId);
+                            });
+                            if (tournament.bracket.final?.matchId) {
+                              bracketMatchIds.add(tournament.bracket.final.matchId);
+                            }
                           }
-                        }
-                        return bracketMatchIds.has(m.id);
-                      })
-                      .sort((a, b) => {
-                        const roundOrder: Record<string, number> = {
-                          quarterFinal: 1,
-                          semiFinal: 2,
-                          final: 3,
-                        };
-                        return (roundOrder[a.round] || 0) - (roundOrder[b.round] || 0);
-                      })
-                      .map((match) => (
+                          return bracketMatchIds.has(m.id);
+                        })
+                        .sort((a, b) => {
+                          const roundOrder: Record<string, number> = {
+                            quarterFinal: 1,
+                            semiFinal: 2,
+                            final: 3,
+                          };
+                          return (roundOrder[a.round] || 0) - (roundOrder[b.round] || 0);
+                        })
+                        .map((match) => (
                         <tr key={match.id} className="border-b border-gray-100">
                           <td className="table-cell-muted">
                             {ROUND_LABELS[match.round] || match.round}
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="table-cell">
                             <span className="text-sm font-medium">
-                              {match.team1?.name || 'TBD'} vs {match.team2?.name || 'TBD'}
+                            {match.team1?.name || 'TBD'} vs {match.team2?.name || 'TBD'}
                             </span>
                             {match.result && (
                               <span className="ml-2 text-muted">
@@ -300,15 +300,15 @@ export default function AdminDashboard() {
                           <td className="table-cell">
                             <a href={`/admin/matches/${match.id}`} className="btn-outline btn-small btn-icon">
                               <Eye className="h-4 w-4" />
-                              View/Simulate
-                            </a>
+                                View/Simulate
+                              </a>
                           </td>
                         </tr>
                       ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
           </div>
         )}
     </AdminLayout>

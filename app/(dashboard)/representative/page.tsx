@@ -137,18 +137,18 @@ export default function RepresentativeDashboard() {
             <CardContent>
               <div className="space-y-2">
                 <a href="/representative/register-team" className="btn-primary-full-width btn-icon justify-center">
-                  {team ? (
-                    <>
-                      <Edit className="h-4 w-4" />
-                      Edit Team
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-4 w-4" />
-                      Register Team
-                    </>
-                  )}
-                </a>
+                    {team ? (
+                      <>
+                        <Edit className="h-4 w-4" />
+                        Edit Team
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4" />
+                        Register Team
+                      </>
+                    )}
+                  </a>
                 <Button className="w-full" variant="outline" disabled>
                   <Eye className="h-4 w-4 mr-2" />
                   View Matches

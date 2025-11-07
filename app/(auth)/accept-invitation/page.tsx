@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validateInvitationToken, acceptInvitation } from '@/app/actions/representative-invitations';
 import { validateAdminInvitationToken, acceptAdminInvitation } from '@/app/actions/admin-invitations';
 import Link from 'next/link';
 
-export default function AcceptInvitationPage() {
+function AcceptInvitationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -38,36 +38,36 @@ export default function AcceptInvitationPage() {
 
     try {
       // Try representative invitation first
-      let result = await validateInvitationToken(token);
-      if (result.success && result.email && result.country) {
+      const repResult = await validateInvitationToken(token);
+      if (repResult.success && repResult.email && repResult.country) {
         setInvitationData({
-          email: result.email,
-          country: result.country,
+          email: repResult.email,
+          country: repResult.country,
           role: 'representative',
         });
         // Pre-fill display name from email (before @)
-        const nameFromEmail = result.email.split('@')[0];
+        const nameFromEmail = repResult.email.split('@')[0];
         setDisplayName(nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
         setValidating(false);
         return;
       }
       
       // Try admin invitation
-      result = await validateAdminInvitationToken(token);
-      if (result.success && result.email) {
+      const adminResult = await validateAdminInvitationToken(token);
+      if (adminResult.success && adminResult.email) {
         setInvitationData({
-          email: result.email,
+          email: adminResult.email,
           role: 'admin',
         });
         // Pre-fill display name from email (before @)
-        const nameFromEmail = result.email.split('@')[0];
+        const nameFromEmail = adminResult.email.split('@')[0];
         setDisplayName(nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
         setValidating(false);
         return;
       }
       
-      // Neither worked
-      setError(result.error || 'Invalid or expired invitation link');
+      // Neither worked - use error from the last attempt
+      setError(adminResult.error || repResult.error || 'Invalid or expired invitation link');
     } catch (err: any) {
       setError(err.message || 'Failed to validate invitation');
     } finally {
@@ -282,6 +282,23 @@ export default function AcceptInvitationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AcceptInvitationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="card card-padding max-w-md w-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-muted">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <AcceptInvitationContent />
+    </Suspense>
   );
 }
 

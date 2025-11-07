@@ -158,13 +158,13 @@ export default function AdminTeamsPage() {
       {/* Teams Table */}
       <div className="card card-padding">
         <h2 className="heading-tertiary mb-6">All Registered Teams</h2>
-        {teams.length === 0 ? (
+          {teams.length === 0 ? (
           <div className="table-empty">
             <Users2 className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <p className="text-description">No teams registered yet.</p>
             <p className="text-muted text-sm mt-2">Teams will appear here once representatives register.</p>
-          </div>
-        ) : (
+            </div>
+          ) : (
           <div className="table-container">
             <table className="table">
               <thead>
@@ -173,85 +173,85 @@ export default function AdminTeamsPage() {
                   <th className="table-header-cell">Country</th>
                   <th className="table-header-cell">Manager</th>
                   <th className="table-header-cell">Overall Rating</th>
-                  {tournament && tournament.status !== 'registration' && (
-                    <>
+                    {tournament && tournament.status !== 'registration' && (
+                      <>
                       <th className="table-header-cell">Points</th>
                       <th className="table-header-cell">Goal Diff</th>
-                    </>
-                  )}
+                      </>
+                    )}
                   <th className="table-header-cell">Players</th>
                   <th className="table-header-cell">Starting 11</th>
-                </tr>
-              </thead>
+                  </tr>
+                </thead>
               <tbody>
-                {teams.map((team, index) => {
-                  const points = tournament && tournament.status !== 'registration'
-                    ? (team.stats?.wins || 0) * 3 + (team.stats?.draws || 0) * 1
-                    : null;
-                  const goalDifference = tournament && tournament.status !== 'registration'
-                    ? team.stats?.goalDifference || 0
-                    : null;
-                  
-                  return (
+                  {teams.map((team, index) => {
+                    const points = tournament && tournament.status !== 'registration'
+                      ? (team.stats?.wins || 0) * 3 + (team.stats?.draws || 0) * 1
+                      : null;
+                    const goalDifference = tournament && tournament.status !== 'registration'
+                      ? team.stats?.goalDifference || 0
+                      : null;
+                    
+                    return (
                     <tr key={`${team.id}-${index}`} className="border-b border-gray-100">
                       <td className="table-cell">
                         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/30">
                           <span className="font-bold text-sm">
-                            {index + 1}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="table-cell">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center mr-3">
-                            <span className="text-2xl">
-                              {COUNTRY_FLAGS[team.country] || ''}
+                              {index + 1}
                             </span>
                           </div>
-                          <div className="text-sm font-medium">{team.country}</div>
-                        </div>
-                      </td>
-                      <td className="table-cell-muted">
-                        {team.managerName}
-                      </td>
+                        </td>
                       <td className="table-cell">
-                        <div className="flex items-center">
-                          <span className="text-sm font-medium mr-2">
-                            {team.overallRating.toFixed(1)}
-                          </span>
-                          <div className="w-20 bg-white/20 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${(team.overallRating / 100) * 100}%` }}
-                            />
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center mr-3">
+                              <span className="text-2xl">
+                                {COUNTRY_FLAGS[team.country] || ''}
+                              </span>
+                            </div>
+                          <div className="text-sm font-medium">{team.country}</div>
                           </div>
-                        </div>
-                      </td>
-                      {tournament && tournament.status !== 'registration' && (
-                        <>
+                        </td>
+                      <td className="table-cell-muted">
+                          {team.managerName}
+                        </td>
+                      <td className="table-cell">
+                          <div className="flex items-center">
+                          <span className="text-sm font-medium mr-2">
+                              {team.overallRating.toFixed(1)}
+                            </span>
+                          <div className="w-20 bg-white/20 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full"
+                                style={{ width: `${(team.overallRating / 100) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        {tournament && tournament.status !== 'registration' && (
+                          <>
                           <td className="table-cell">
                             <span className="text-sm font-medium">
                               {points}
                             </span>
-                          </td>
+                            </td>
                           <td className="table-cell-muted">
-                            {goalDifference !== null && goalDifference > 0 ? '+' : ''}{goalDifference}
-                          </td>
-                        </>
-                      )}
+                              {goalDifference !== null && goalDifference > 0 ? '+' : ''}{goalDifference}
+                            </td>
+                          </>
+                        )}
                       <td className="table-cell-muted">
-                        {team.players?.length || 0}
-                      </td>
+                          {team.players?.length || 0}
+                        </td>
                       <td className="table-cell-muted">
-                        {team.starting11Ids?.length || 0}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                          {team.starting11Ids?.length || 0}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
       </div>
     </AdminLayout>
   );

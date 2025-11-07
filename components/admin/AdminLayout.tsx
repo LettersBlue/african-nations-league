@@ -68,7 +68,7 @@ export default function AdminLayout({ children, activePage = 'dashboard' }: Admi
                 <a
                   key={item.name}
                   href={item.href}
-                    className={`
+                  className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
                     ${isActive 
                       ? 'bg-black/20 text-white font-medium' 

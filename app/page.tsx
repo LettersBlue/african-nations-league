@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import { getMatchesByTournament, getTeamsByTournament } from "@/lib/firebase/firestore";
 import { getTournamentStatus } from "@/app/actions/tournament";
 import BracketViewWrapper from "@/components/tournament/BracketViewWrapper";
@@ -236,7 +236,7 @@ export default async function HomePage() {
                       const team2Score = m.result?.team2Score ?? m.team2Score;
                       
                       // Format score with penalties if applicable
-                      let scoreDisplay: string | JSX.Element = 'Scheduled';
+                       let scoreDisplay: string | React.ReactElement = 'Scheduled';
                       if (typeof team1Score === 'number' && typeof team2Score === 'number') {
                         if (m.result?.wentToPenalties && m.result.penaltyShootout) {
                           const penaltyScore = m.result.penaltyShootout;

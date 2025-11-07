@@ -85,7 +85,7 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
+  
   
   // Helper to get match from database by matchId
   const getMatchResult = (matchId: string) => {
