@@ -76,6 +76,7 @@ export async function getTournamentStatus() {
         id: tournamentRef.id,
         ...defaultTournament,
         createdAt: new Date(),
+        teamIds: [],
       } as Tournament;
     }
 
