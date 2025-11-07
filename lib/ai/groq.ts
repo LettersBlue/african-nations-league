@@ -1,3 +1,8 @@
+/**
+ * Groq API integration for generating match commentary
+ * FALLBACK AI provider - Used when Cohere API fails or is unavailable
+ */
+
 import Groq from 'groq-sdk';
 import { Match, Player } from '@/types';
 
@@ -28,7 +33,8 @@ Attackers: ${at.join(', ')}`;
 }
 
 /**
- * Generate match commentary using AI
+ * Generate match commentary using Groq API (FALLBACK provider)
+ * This is used as a fallback when Cohere API fails
  */
 export async function generateMatchCommentary(match: Match): Promise<{
   commentary: string[];
@@ -81,8 +87,8 @@ Generate the commentary now:
       result: parsedResult,
     };
   } catch (error) {
-    console.error('Error generating AI commentary:', error);
-    throw new Error('Failed to generate match commentary');
+    console.error('Groq API error (fallback failed):', error);
+    throw new Error('Failed to generate match commentary with Groq');
   }
 }
 

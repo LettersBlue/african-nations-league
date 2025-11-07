@@ -8,7 +8,9 @@ import { generateMatchEvents } from '@/lib/utils/match-events';
 import { advanceWinner, isTournamentComplete, getTournamentResults } from '@/lib/utils/bracket';
 import { getTeam } from './team';
 import { calculateTeamRating } from '@/lib/utils/ratings';
-import { generateMatchCommentary } from '@/lib/ai/groq';
+// AI Commentary providers (priority order: Cohere -> Groq -> Fallback)
+import { generateMatchCommentary as generateCohereCommentary } from '@/lib/ai/cohere';
+import { generateMatchCommentary as generateGroqCommentary } from '@/lib/ai/groq';
 // Match notification emails removed - not needed
 
 /**
@@ -97,13 +99,31 @@ export async function playMatch(matchId: string) {
       wentToPenalties: simulationResult.wentToPenalties,
     });
     
-    // Try to generate AI commentary, fallback if it fails
+    // Try to generate AI commentary with fallback chain: Cohere (primary) -> Groq (fallback) -> Basic fallback
     let commentary: string[];
     let keyMoments: string[] = [];
     
     try {
-      const aiResult = await generateMatchCommentary(match);
-      commentary = aiResult.commentary;
+      // Try Cohere first (PRIMARY AI provider)
+      try {
+        console.log('Attempting to generate commentary with Cohere API (primary)...');
+        const aiResult = await generateCohereCommentary(match);
+        commentary = aiResult.commentary;
+        console.log('Successfully generated commentary with Cohere API');
+      } catch (cohereError) {
+        // If Cohere fails, try Groq (FALLBACK AI provider)
+        console.warn('Cohere API failed, trying Groq as fallback:', cohereError);
+        try {
+          const groqResult = await generateGroqCommentary(match);
+          commentary = groqResult.commentary;
+          console.log('Successfully generated commentary with Groq API (fallback)');
+        } catch (groqError) {
+          // If both fail, throw to use basic fallback
+          console.error('Both Cohere and Groq failed, using basic fallback:', groqError);
+          throw groqError;
+        }
+      }
+      
       // Extract key moments (goals, cards, etc.)
       keyMoments = commentary.filter(line => 
         line.toLowerCase().includes('goal') || 
@@ -112,9 +132,12 @@ export async function playMatch(matchId: string) {
         line.toLowerCase().includes('red')
       ).slice(0, 10); // Limit to 10 key moments
     } catch (error) {
-      console.error('AI commentary generation failed, using fallback:', error);
-      // Fallback commentary
-      commentary = [`Match between ${match.team1.name} and ${match.team2.name}`, `Final Score: ${simulationResult.team1Score} - ${simulationResult.team2Score}`];
+      console.error('All AI commentary generation failed, using basic fallback:', error);
+      // Basic fallback commentary
+      commentary = [
+        `Match between ${match.team1.name} and ${match.team2.name}`,
+        `Final Score: ${simulationResult.team1Score} - ${simulationResult.team2Score}`
+      ];
     }
     
     // Clean result object - remove undefined values for Firestore

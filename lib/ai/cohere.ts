@@ -1,8 +1,9 @@
 /**
  * Cohere API integration for generating rich match commentary
+ * PRIMARY AI provider - Groq is used as fallback if Cohere fails
  */
 
-import { Match, Team, MatchEvent } from '@/types';
+import { Match, Team, MatchEvent, Player } from '@/types';
 
 // Initialize Cohere client (if SDK available, otherwise use fetch)
 const COHERE_API_KEY = process.env.COHERE_API_KEY;
@@ -78,6 +79,160 @@ Commentary:`;
   } catch (error) {
     console.warn('Cohere API error, using fallback:', error);
     return generateFallbackCommentary(currentMinute, currentScore, team1, team2, matchContext);
+  }
+}
+
+/**
+ * Format squads for AI prompt (shared with Groq)
+ */
+function formatSquads(team1Squad: Player[], team2Squad: Player[], team1Name: string, team2Name: string): string {
+  const formatTeam = (squad: Player[], teamName: string) => {
+    const gk = squad.filter(p => p.naturalPosition === 'GK').map(p => `${p.name} (GK: ${p.ratings.GK})`);
+    const df = squad.filter(p => p.naturalPosition === 'DF').map(p => `${p.name} (DF: ${p.ratings.DF})`);
+    const md = squad.filter(p => p.naturalPosition === 'MD').map(p => `${p.name} (MD: ${p.ratings.MD})`);
+    const at = squad.filter(p => p.naturalPosition === 'AT').map(p => `${p.name} (AT: ${p.ratings.AT})`);
+    
+    return `
+${teamName}:
+Goalkeepers: ${gk.join(', ')}
+Defenders: ${df.join(', ')}
+Midfielders: ${md.join(', ')}
+Attackers: ${at.join(', ')}`;
+  };
+  
+  return formatTeam(team1Squad, team1Name) + formatTeam(team2Squad, team2Name);
+}
+
+/**
+ * Parse AI commentary to extract match result (shared format with Groq)
+ */
+function parseCommentary(commentary: string, team1Name: string, team2Name: string): {
+  team1Score: number;
+  team2Score: number;
+  goalScorers: Array<{
+    playerName: string;
+    teamName: string;
+    minute: number;
+  }>;
+} {
+  const lines = commentary.split('\n');
+  const goalScorers: Array<{ playerName: string; teamName: string; minute: number }> = [];
+  
+  // Extract goals
+  lines.forEach(line => {
+    const goalMatch = line.match(/GOAL!.*?(\d+)'.*?([A-Za-z\s]+)\(([A-Za-z\s]+)\)/);
+    if (goalMatch) {
+      goalScorers.push({
+        minute: parseInt(goalMatch[1]),
+        playerName: goalMatch[2].trim(),
+        teamName: goalMatch[3].trim(),
+      });
+    }
+  });
+  
+  // Extract final score
+  let team1Score = 0;
+  let team2Score = 0;
+  
+  const scoreMatch = commentary.match(/FINAL SCORE:.*?(\d+)\s*-\s*(\d+)/i);
+  if (scoreMatch) {
+    team1Score = parseInt(scoreMatch[1]);
+    team2Score = parseInt(scoreMatch[2]);
+  } else {
+    // Fallback: count goals by team
+    goalScorers.forEach(goal => {
+      if (goal.teamName === team1Name) {
+        team1Score++;
+      } else if (goal.teamName === team2Name) {
+        team2Score++;
+      }
+    });
+  }
+  
+  return {
+    team1Score,
+    team2Score,
+    goalScorers,
+  };
+}
+
+/**
+ * Generate full match commentary using Cohere API (PRIMARY AI provider)
+ * This is the first choice for AI commentary generation
+ */
+export async function generateMatchCommentary(match: Match): Promise<{
+  commentary: string[];
+  result: {
+    team1Score: number;
+    team2Score: number;
+    goalScorers: Array<{
+      playerName: string;
+      teamName: string;
+      minute: number;
+    }>;
+  };
+}> {
+  if (!COHERE_API_KEY) {
+    throw new Error('Cohere API key not configured');
+  }
+
+  const prompt = `You are a professional football commentator for the African Nations League. Generate a detailed play-by-play commentary for a match between ${match.team1.name} and ${match.team2.name} in the ${match.round === 'quarterFinal' ? 'Quarter Final' : match.round === 'semiFinal' ? 'Semi Final' : 'Final'}.
+
+SQUADS:
+${formatSquads(match.team1.squad, match.team2.squad, match.team1.name, match.team2.name)}
+
+RULES:
+- The match must end with a clear winner (90 minutes, extra time, or penalties)
+- Include key moments: kick-off, chances, goals, saves, fouls, cards
+- For each goal, specify: minute, scorer name, team, description
+- Make it exciting and realistic
+- If draw after 90 min, go to extra time (30 min)
+- If still draw, go to penalties (5 each, then sudden death)
+- Keep commentary engaging and professional
+
+FORMAT:
+Provide commentary as chronological events, one per line.
+Mark goals clearly: "GOAL! [minute]' - [Player Name] ([Team]) scores!"
+Mark final score: "FINAL SCORE: [Team 1] [score] - [score] [Team 2]"
+
+Generate the commentary now:
+`;
+
+  try {
+    const response = await fetch(COHERE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${COHERE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'command',
+        prompt: prompt,
+        max_tokens: 2000,
+        temperature: 0.8,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Cohere API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const commentary = data.generations?.[0]?.text?.trim() || '';
+    
+    if (!commentary) {
+      throw new Error('Empty response from Cohere API');
+    }
+
+    const parsedResult = parseCommentary(commentary, match.team1.name, match.team2.name);
+    
+    return {
+      commentary: commentary.split('\n').filter(line => line.trim()),
+      result: parsedResult,
+    };
+  } catch (error) {
+    console.error('Cohere API error (will try Groq as fallback):', error);
+    throw error; // Re-throw to allow Groq fallback
   }
 }
 
