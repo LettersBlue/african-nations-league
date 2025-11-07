@@ -6,9 +6,9 @@ A comprehensive tournament simulation platform for the African Nations League bu
 
 ## 🚀 Using the Deployed Application
 
-**Deployed URL**: _To be deployed - URL will be updated after deployment_
+**Deployed URL**: [https://african-nations-league-theta.vercel.app](https://african-nations-league-theta.vercel.app)
 
-Once deployed, you can access the application at the URL above. **No setup required** - simply visit the URL in your web browser and start using the platform.
+The application is live and ready to use! **No setup required** - simply visit the URL above in your web browser and start using the platform.
 
 ### Login Credentials
 
@@ -201,7 +201,7 @@ The application is deployed on **Vercel**. When deployed, all environment variab
 ## 📧 Contact & Support
 
 For questions regarding this submission:
-- **Live Deployment**: _To be deployed - URL will be provided after deployment_
+- **Live Deployment**: [https://african-nations-league-theta.vercel.app](https://african-nations-league-theta.vercel.app)
 - **Admin Login**: admin@r2g.com / 123456
 
 ---
