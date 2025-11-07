@@ -392,6 +392,7 @@ export async function validateAdminInvitationToken(token: string) {
     return {
       success: true,
       email: user.email,
+      country: undefined,
     };
   } catch (error: any) {
     console.error('Error validating invitation token:', error);
