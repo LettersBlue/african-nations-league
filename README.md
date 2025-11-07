@@ -67,8 +67,10 @@ This section explains how to run the application locally on your machine. **Note
    # Groq AI API
    GROQ_API_KEY=your_groq_api_key
 
-   # Resend Email API
-   RESEND_API_KEY=re_your_resend_api_key
+   # Gmail SMTP (for invitation emails - optional)
+   # Only needed if you want to send invitation emails to representatives/admins
+   # GMAIL_USER=your-email@gmail.com
+   # GMAIL_APP_PASSWORD=your-app-password
 
    # Application URL
    NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -86,7 +88,10 @@ This section explains how to run the application locally on your machine. **Note
    - Get Groq API key from [console.groq.com](https://console.groq.com) (free tier available for testing)
      - Free tier: Limited requests per minute (check console for limits)
      - Model used: `llama-3.1-8b` (free tier friendly) or set `GROQ_MODEL=llama-3.1-70b-versatile` for paid tier
-   - Get Resend API key from [resend.com](https://resend.com)
+   - (Optional) Set up Gmail SMTP for invitation emails:
+     - Enable 2-Factor Authentication on your Gmail account
+     - Generate an App Password at https://myaccount.google.com/apppasswords
+     - Add `GMAIL_USER` and `GMAIL_APP_PASSWORD` to `.env.local`
 
 6. **Start the development server**
    ```bash
@@ -139,9 +144,6 @@ Two types of match simulation available:
 1. **Simple Simulation**: Instant results based on team ratings
 2. **AI Commentary**: Full play-by-play text commentary using Groq API (Llama 3.1)
 
-### Email Notifications
-- Automatic emails sent to team representatives after match completion
-- Email includes match results, scoreline, and goal scorers
 
 ### Public Pages
 - Tournament bracket (no login required)
@@ -156,7 +158,7 @@ Two types of match simulation available:
 - **Database**: Firebase Firestore (NoSQL)
 - **Authentication**: Firebase Auth (Email/Password + Google OAuth)
 - **AI Service**: Groq API with Llama 3.1 (for match commentary)
-- **Email**: Resend API (for match result notifications)
+- **Email**: Gmail SMTP via Nodemailer (for invitation emails - optional)
 - **Styling**: Tailwind CSS with custom glass morphism effects
 - **Charts**: Recharts (for analytics dashboard)
 - **Tournament Bracket**: React Tournament Brackets library
@@ -184,8 +186,8 @@ The application is deployed on **Vercel**. When deployed, all environment variab
      - `NEXT_PUBLIC_FIREBASE_APP_ID`
      - `FIREBASE_ADMIN_SDK_KEY` (paste entire JSON as string)
      - `GROQ_API_KEY`
-     - `RESEND_API_KEY`
      - `NEXT_PUBLIC_APP_URL` (set after first deployment with your deployment URL)
+     - (Optional) `GMAIL_USER` and `GMAIL_APP_PASSWORD` if you want invitation emails
 
 3. **Deploy**
    - Vercel will automatically detect Next.js and configure build settings

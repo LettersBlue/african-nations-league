@@ -68,11 +68,11 @@ export default function AdminLayout({ children, activePage = 'dashboard' }: Admi
                 <a
                   key={item.name}
                   href={item.href}
-                  className={`
+                    className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
                     ${isActive 
-                      ? 'bg-blue-100 text-blue-900 font-medium' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-black/20 text-white font-medium' 
+                      : 'text-white hover:bg-black/20'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
@@ -88,7 +88,7 @@ export default function AdminLayout({ children, activePage = 'dashboard' }: Admi
           <div className="px-4 py-4 border-t">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="flex items-center gap-3 w-full px-4 py-3 text-red-300 hover:bg-red-900/40 rounded-lg transition-colors"
             >
               <LogOut className="h-5 w-5" />
               <span>Log Out</span>

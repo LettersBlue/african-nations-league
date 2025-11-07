@@ -151,9 +151,9 @@ export default function AdminMatchPage({ params }: { params: Promise<{ matchId: 
             <div className="card card-padding text-center">
               <h1 className="text-2xl font-bold text-gray-800 mb-4">Match Not Found</h1>
               <p className="text-gray-600 mb-6">The match you're looking for doesn't exist.</p>
-              <Button asChild>
-                <Link href="/admin">Back to Dashboard</Link>
-              </Button>
+              <Link href="/admin" className="btn-primary btn-icon">
+                Back to Dashboard
+              </Link>
             </div>
           </div>
         </div>

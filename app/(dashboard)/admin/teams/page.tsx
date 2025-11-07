@@ -8,7 +8,6 @@ import { getUser } from '@/lib/firebase/firestore';
 import { getTournamentStatus } from '@/app/actions/tournament';
 import { getTeamsByTournament } from '@/lib/firebase/firestore';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users2, Trophy, TrendingUp, Award } from 'lucide-react';
 import { COUNTRY_FLAGS } from '@/lib/constants';
 
@@ -103,7 +102,7 @@ export default function AdminTeamsPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading teams...</p>
+            <p className="text-muted">Loading teams...</p>
           </div>
         </div>
       </AdminLayout>
@@ -113,173 +112,147 @@ export default function AdminTeamsPage() {
   return (
     <AdminLayout activePage="teams">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-blue-900 mb-2">Registered Teams</h1>
-        <p className="text-gray-600">View all teams and their statistics</p>
+        <h1 className="heading-primary mb-2">Registered Teams</h1>
+        <p className="text-description">View all teams and their statistics</p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Teams</CardTitle>
-            <Users2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statistics.totalTeams}</div>
-            <p className="text-xs text-muted-foreground">Registered</p>
-          </CardContent>
-        </Card>
+        <div className="card-sm">
+          <div className="flex flex-row items-center justify-between mb-4">
+            <h3 className="heading-quaternary">Total Teams</h3>
+            <Users2 className="h-5 w-5" />
+          </div>
+          <div className="text-3xl font-bold mb-1">{statistics.totalTeams}</div>
+          <p className="text-muted text-sm">Registered</p>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statistics.averageRating}</div>
-            <p className="text-xs text-muted-foreground">Team rating</p>
-          </CardContent>
-        </Card>
+        <div className="card-sm">
+          <div className="flex flex-row items-center justify-between mb-4">
+            <h3 className="heading-quaternary">Average Rating</h3>
+            <TrendingUp className="h-5 w-5" />
+          </div>
+          <div className="text-3xl font-bold mb-1">{statistics.averageRating}</div>
+          <p className="text-muted text-sm">Team rating</p>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Highest Rating</CardTitle>
-            <Trophy className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statistics.highestRating}</div>
-            <p className="text-xs text-muted-foreground">Top team</p>
-          </CardContent>
-        </Card>
+        <div className="card-sm">
+          <div className="flex flex-row items-center justify-between mb-4">
+            <h3 className="heading-quaternary">Highest Rating</h3>
+            <Trophy className="h-5 w-5 text-yellow-400" />
+          </div>
+          <div className="text-3xl font-bold mb-1">{statistics.highestRating}</div>
+          <p className="text-muted text-sm">Top team</p>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Lowest Rating</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statistics.lowestRating}</div>
-            <p className="text-xs text-muted-foreground">Underdog</p>
-          </CardContent>
-        </Card>
+        <div className="card-sm">
+          <div className="flex flex-row items-center justify-between mb-4">
+            <h3 className="heading-quaternary">Lowest Rating</h3>
+            <Award className="h-5 w-5" />
+          </div>
+          <div className="text-3xl font-bold mb-1">{statistics.lowestRating}</div>
+          <p className="text-muted text-sm">Underdog</p>
+        </div>
       </div>
 
       {/* Teams Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Registered Teams</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {teams.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <Users2 className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <p>No teams registered yet.</p>
-              <p className="text-sm mt-2">Teams will appear here once representatives register.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      #
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Country
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Manager
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Overall Rating
-                    </th>
-                    {tournament && tournament.status !== 'registration' && (
-                      <>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Points
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Goal Diff
-                        </th>
-                      </>
-                    )}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Players
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Starting 11
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {teams.map((team, index) => {
-                    const points = tournament && tournament.status !== 'registration'
-                      ? (team.stats?.wins || 0) * 3 + (team.stats?.draws || 0) * 1
-                      : null;
-                    const goalDifference = tournament && tournament.status !== 'registration'
-                      ? team.stats?.goalDifference || 0
-                      : null;
-                    
-                    return (
-                      <tr key={`${team.id}-${index}`} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">
-                            <span className="text-blue-900 font-bold text-sm">
-                              {index + 1}
+      <div className="card card-padding">
+        <h2 className="heading-tertiary mb-6">All Registered Teams</h2>
+        {teams.length === 0 ? (
+          <div className="table-empty">
+            <Users2 className="h-16 w-16 mx-auto mb-4 opacity-50" />
+            <p className="text-description">No teams registered yet.</p>
+            <p className="text-muted text-sm mt-2">Teams will appear here once representatives register.</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="table-header-cell">#</th>
+                  <th className="table-header-cell">Country</th>
+                  <th className="table-header-cell">Manager</th>
+                  <th className="table-header-cell">Overall Rating</th>
+                  {tournament && tournament.status !== 'registration' && (
+                    <>
+                      <th className="table-header-cell">Points</th>
+                      <th className="table-header-cell">Goal Diff</th>
+                    </>
+                  )}
+                  <th className="table-header-cell">Players</th>
+                  <th className="table-header-cell">Starting 11</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teams.map((team, index) => {
+                  const points = tournament && tournament.status !== 'registration'
+                    ? (team.stats?.wins || 0) * 3 + (team.stats?.draws || 0) * 1
+                    : null;
+                  const goalDifference = tournament && tournament.status !== 'registration'
+                    ? team.stats?.goalDifference || 0
+                    : null;
+                  
+                  return (
+                    <tr key={`${team.id}-${index}`} className="border-b border-gray-100">
+                      <td className="table-cell">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/30">
+                          <span className="font-bold text-sm">
+                            {index + 1}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="table-cell">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center mr-3">
+                            <span className="text-2xl">
+                              {COUNTRY_FLAGS[team.country] || ''}
                             </span>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center mr-3">
-                              <span className="text-2xl">
-                                {COUNTRY_FLAGS[team.country] || ''}
-                              </span>
-                            </div>
-                            <div className="text-sm font-medium text-gray-900">{team.country}</div>
+                          <div className="text-sm font-medium">{team.country}</div>
+                        </div>
+                      </td>
+                      <td className="table-cell-muted">
+                        {team.managerName}
+                      </td>
+                      <td className="table-cell">
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-2">
+                            {team.overallRating.toFixed(1)}
+                          </span>
+                          <div className="w-20 bg-white/20 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{ width: `${(team.overallRating / 100) * 100}%` }}
+                            />
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {team.managerName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {team.overallRating.toFixed(1)}
-                            </span>
-                            <div className="ml-2 w-20 bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-blue-600 h-2 rounded-full"
-                                style={{ width: `${(team.overallRating / 100) * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        </td>
-                        {tournament && tournament.status !== 'registration' && (
-                          <>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        </div>
+                      </td>
+                      {tournament && tournament.status !== 'registration' && (
+                        <>
+                          <td className="table-cell">
+                            <span className="text-sm font-medium">
                               {points}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {goalDifference !== null && goalDifference > 0 ? '+' : ''}{goalDifference}
-                            </td>
-                          </>
-                        )}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {team.players?.length || 0}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {team.starting11Ids?.length || 0}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                            </span>
+                          </td>
+                          <td className="table-cell-muted">
+                            {goalDifference !== null && goalDifference > 0 ? '+' : ''}{goalDifference}
+                          </td>
+                        </>
+                      )}
+                      <td className="table-cell-muted">
+                        {team.players?.length || 0}
+                      </td>
+                      <td className="table-cell-muted">
+                        {team.starting11Ids?.length || 0}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </AdminLayout>
   );
 }

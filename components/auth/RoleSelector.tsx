@@ -63,7 +63,7 @@ export default function RoleSelector({
 
       {selectedRole === 'representative' && onCountryChange && (
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="country" className="label-field">
             Select Your Country *
           </label>
           <select
@@ -71,7 +71,7 @@ export default function RoleSelector({
             value={selectedCountry || ''}
             onChange={(e) => onCountryChange(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input-select"
           >
             <option value="">Select your country</option>
             {AFRICAN_COUNTRIES.map(country => (

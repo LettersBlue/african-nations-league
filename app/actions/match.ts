@@ -9,6 +9,7 @@ import { advanceWinner, isTournamentComplete, getTournamentResults } from '@/lib
 import { getTeam } from './team';
 import { calculateTeamRating } from '@/lib/utils/ratings';
 import { generateMatchCommentary } from '@/lib/ai/groq';
+// Match notification emails removed - not needed
 
 /**
  * Get match by ID
@@ -154,19 +155,6 @@ export async function playMatch(matchId: string) {
       completedAt: Timestamp.now(),
       simulationType: 'played', // AI commentary was generated
     });
-    
-    // Send email notifications (fire and forget - don't block on errors)
-    try {
-      // Call email notification API in background
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/email/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matchId }),
-      }).catch(err => console.error('Failed to trigger email notification:', err));
-    } catch (emailError) {
-      console.error('Error triggering email notifications:', emailError);
-      // Don't fail the match completion if email fails
-    }
     
     // Advance bracket if this is a quarter final or semi final
     if (match.round === 'quarterFinal' || match.round === 'semiFinal' || match.round === 'final') {
@@ -364,19 +352,6 @@ export async function simulateMatch(matchId: string) {
       completedAt: Timestamp.now(),
       simulationType: 'simulated', // Simple simulation without AI
     });
-    
-    // Send email notifications (fire and forget - don't block on errors)
-    try {
-      // Call email notification API in background
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/email/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matchId }),
-      }).catch(err => console.error('Failed to trigger email notification:', err));
-    } catch (emailError) {
-      console.error('Error triggering email notifications:', emailError);
-      // Don't fail the match completion if email fails
-    }
     
     // Advance bracket if this is a quarter final or semi final (same logic as playMatch)
     if (match.round === 'quarterFinal' || match.round === 'semiFinal' || match.round === 'final') {

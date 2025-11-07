@@ -299,6 +299,18 @@
     @apply inline-flex items-center gap-2;
   }
 
+  .btn-primary-small {
+    background-color: hsl(217, 91%, 60%) !important; /* blue-600 - primary color */
+    color: #ffffff !important;
+    @apply px-3 py-1 text-xs rounded hover:opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary-full-width {
+    background-color: hsl(217, 91%, 60%) !important; /* blue-600 - primary color */
+    color: #ffffff !important;
+    @apply w-full px-4 py-2 rounded-lg hover:opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed;
+  }
+
   /* Form Elements */
   .form-container {
     @apply space-y-6;
@@ -314,10 +326,30 @@
 
   .input-field {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .input-field::placeholder {
+    color: #9ca3af !important; /* gray-400 for placeholder text */
   }
 
   .input-select {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .input-textarea {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .input-textarea::placeholder {
+    color: #9ca3af !important; /* gray-400 for placeholder text */
   }
 
   .label-field {
@@ -332,19 +364,31 @@
 
   /* Alerts */
   .alert-success {
-    @apply bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm;
+    background: rgba(34, 197, 94, 0.2) !important; /* green-500 with opacity */
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    @apply px-4 py-3 rounded-lg text-sm;
   }
 
   .alert-error {
-    @apply bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm;
+    background: rgba(239, 68, 68, 0.2) !important; /* red-500 with opacity */
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    @apply px-4 py-3 rounded-lg text-sm;
   }
 
   .alert-warning {
-    @apply bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg text-sm;
+    background: rgba(234, 179, 8, 0.2) !important; /* yellow-500 with opacity */
+    border: 1px solid rgba(234, 179, 8, 0.4) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    @apply px-4 py-3 rounded-lg text-sm;
   }
 
   .alert-info {
-    @apply bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm;
+    background: rgba(37, 99, 235, 0.2) !important; /* blue-600 with opacity */
+    border: 1px solid rgba(37, 99, 235, 0.4) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    @apply px-4 py-3 rounded-lg text-sm;
   }
 
   .alert-inline {
@@ -406,6 +450,7 @@
 
   .table-header-cell {
     @apply px-6 py-4 text-left text-sm font-semibold;
+    color: rgba(255, 255, 255, 0.9) !important;
   }
 
   .table-header-cell-center {
@@ -426,6 +471,7 @@
 
   .table-cell {
     @apply px-6 py-4 text-sm;
+    color: rgba(255, 255, 255, 0.95) !important;
   }
 
   .table-cell-center {
@@ -445,30 +491,42 @@
   /* Badges & Status */
   .badge {
     @apply px-2 py-1 rounded text-xs font-medium border;
+    color: #ffffff !important;
   }
 
   .badge-admin {
-    @apply bg-purple-100 text-purple-800 border-purple-300;
+    background-color: rgba(147, 51, 234, 0.8) !important; /* purple-600 with opacity */
+    border-color: rgba(168, 85, 247, 0.5) !important; /* purple-400 */
+    color: #ffffff !important;
   }
 
   .badge-representative {
-    @apply bg-blue-100 text-blue-800 border-blue-300;
+    background-color: rgba(37, 99, 235, 0.8) !important; /* blue-600 with opacity */
+    border-color: rgba(59, 130, 246, 0.5) !important; /* blue-400 */
+    color: #ffffff !important;
   }
 
   .badge-visitor {
-    @apply bg-gray-100 text-gray-800 border-gray-300;
+    background-color: rgba(75, 85, 99, 0.8) !important; /* gray-600 with opacity */
+    border-color: rgba(107, 114, 128, 0.5) !important; /* gray-500 */
+    color: #ffffff !important;
   }
 
   .badge-pending {
-    @apply bg-yellow-100 text-yellow-800 border-yellow-300;
+    background-color: rgba(234, 179, 8, 0.8) !important; /* yellow-500 with opacity */
+    border-color: rgba(250, 204, 21, 0.5) !important; /* yellow-400 */
+    color: #ffffff !important;
   }
 
   .badge-accepted {
-    @apply bg-green-100 text-green-800 border-green-300;
+    background-color: rgba(34, 197, 94, 0.8) !important; /* green-500 with opacity */
+    border-color: rgba(74, 222, 128, 0.5) !important; /* green-400 */
+    color: #ffffff !important;
   }
 
   .badge-status {
     @apply px-3 py-1 rounded-full text-sm font-medium;
+    color: #ffffff !important;
   }
 
   /* Empty States */
@@ -564,7 +622,7 @@
   }
 
   .btn-action-danger {
-    @apply bg-red-600 text-white hover:bg-red-700;
+    @apply bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed;
   }
 
   .btn-action-success {
@@ -610,8 +668,8 @@
     transform: scale(1.1) translateY(-1px);
   }
   
-  /* Global link styling for all anchor tags */
-  a {
+  /* Global link styling for all anchor tags (excluding button-styled links) */
+  a:not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-primary-small):not(.btn-primary-full-width):not(.btn-action-danger):not(.btn-action-success):not(.btn-action-primary):not(.sidebar a) {
     color: rgba(255, 255, 255, 0.95) !important;
     @apply text-lg font-semibold underline decoration-2;
     text-decoration-color: rgba(255, 255, 255, 0.7);
@@ -620,8 +678,8 @@
     cursor: pointer;
   }
   
-  /* Hover effects for links (excluding button links) */
-  a:not(button a):not(.btn-primary a):not(.btn-secondary a):not(.btn-outline a):hover {
+  /* Hover effects for links (excluding button-styled links and admin sidebar) */
+  a:not(button a):not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-primary-small):not(.btn-primary-full-width):not(.btn-action-danger):not(.btn-action-success):not(.btn-action-primary):not(.sidebar a):hover {
     color: #ffffff !important;
     text-decoration-color: rgba(255, 255, 255, 1);
     @apply decoration-2;
@@ -629,22 +687,50 @@
     transform: scale(1.1) translateY(-1px);
   }
   
-  /* Links in buttons should not have underline or animations */
-  button a,
-  .btn-primary a,
-  .btn-secondary a,
-  .btn-outline a {
+  /* Links with button classes should not have default link styling */
+  a.btn-primary,
+  a.btn-secondary,
+  a.btn-outline,
+  a.btn-primary-small,
+  a.btn-primary-full-width,
+  a.btn-action-danger,
+  a.btn-action-success,
+  a.btn-action-primary {
     text-decoration: none !important;
     animation: none !important;
     transform: none !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
   }
   
-  button a:hover,
-  .btn-primary a:hover,
-  .btn-secondary a:hover,
-  .btn-outline a:hover {
+  a.btn-primary:hover,
+  a.btn-secondary:hover,
+  a.btn-outline:hover,
+  a.btn-primary-small:hover,
+  a.btn-primary-full-width:hover,
+  a.btn-action-danger:hover,
+  a.btn-action-success:hover,
+  a.btn-action-primary:hover {
     animation: none !important;
     transform: none !important;
+    text-decoration: none !important;
+  }
+  
+  /* Admin sidebar links should not have pulse animation or global link styles */
+  .sidebar a {
+    animation: none !important;
+    text-decoration: none !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    text-underline-offset: 0 !important;
+    color: inherit !important;
+  }
+  
+  .sidebar a:hover {
+    animation: none !important;
+    transform: none !important;
+    text-decoration: none !important;
+    color: inherit !important;
   }
 
   .text-center-section {

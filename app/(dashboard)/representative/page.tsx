@@ -100,9 +100,9 @@ export default function RepresentativeDashboard() {
                       </div>
                     </div>
                     <div className="mt-4 text-center">
-                      <Button variant="outline" size="sm" className="w-full">
+                      <a href="/representative/team" className="btn-outline btn-small w-full">
                         View Full Team Details
-                      </Button>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -110,9 +110,9 @@ export default function RepresentativeDashboard() {
                 <div className="text-center text-gray-500 py-8">
                   <Users2 className="h-16 w-16 mx-auto mb-4 text-gray-400" />
                   <p className="mb-4">No team registered yet</p>
-                  <Button asChild>
-                    <a href="/representative/register-team">Register Team</a>
-                  </Button>
+                  <a href="/representative/register-team" className="btn-primary btn-icon justify-center">
+                    Register Team
+                  </a>
                 </div>
               )}
             </CardContent>
@@ -136,21 +136,19 @@ export default function RepresentativeDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Button className="w-full" asChild>
-                  <a href="/representative/register-team" className="flex items-center justify-center gap-2">
-                    {team ? (
-                      <>
-                        <Edit className="h-4 w-4" />
-                        Edit Team
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-4 w-4" />
-                        Register Team
-                      </>
-                    )}
-                  </a>
-                </Button>
+                <a href="/representative/register-team" className="btn-primary-full-width btn-icon justify-center">
+                  {team ? (
+                    <>
+                      <Edit className="h-4 w-4" />
+                      Edit Team
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      Register Team
+                    </>
+                  )}
+                </a>
                 <Button className="w-full" variant="outline" disabled>
                   <Eye className="h-4 w-4 mr-2" />
                   View Matches
@@ -195,9 +193,9 @@ export default function RepresentativeDashboard() {
         </Card>
         
         <div className="mt-8 text-center">
-          <Button variant="outline" asChild>
-            <a href="/">Back to Home</a>
-          </Button>
+          <a href="/" className="btn-outline btn-icon justify-center">
+            Back to Home
+          </a>
         </div>
       </div>
     </div>

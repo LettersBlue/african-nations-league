@@ -712,7 +712,7 @@ export default function TeamRegistrationPage() {
                   onChange={(e) => handleInputChange("country", e.target.value)}
                   required
                   disabled={isEditMode}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`input-select ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Select your country</option>
                   {AFRICAN_COUNTRIES.map(country => (
@@ -722,7 +722,7 @@ export default function TeamRegistrationPage() {
               </div>
               
               <div>
-                <label htmlFor="managerName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="managerName" className="label-field">
                   Manager Name *
                 </label>
                 <input
@@ -731,7 +731,7 @@ export default function TeamRegistrationPage() {
                   value={formData.managerName}
                   onChange={(e) => handleInputChange("managerName", e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="input-field"
                   placeholder="Enter manager name"
                 />
               </div>
@@ -820,13 +820,13 @@ export default function TeamRegistrationPage() {
                             value={player.name}
                             onChange={(e) => handlePlayerChange(index, "name", e.target.value)}
                             placeholder="Player name"
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="input-field text-sm"
                           />
                           
                           <select
                             value={player.naturalPosition}
                             onChange={(e) => handlePlayerChange(index, "naturalPosition", e.target.value as Position)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="input-select text-sm"
                           >
                             {Object.entries(POSITION_LABELS).map(([value, label]) => (
                               <option key={value} value={value}>{label}</option>
@@ -1022,13 +1022,13 @@ export default function TeamRegistrationPage() {
                             value={player.name}
                             onChange={(e) => handlePlayerChange(index, "name", e.target.value)}
                             placeholder="Player name"
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="input-field text-sm"
                           />
                           
                           <select
                             value={player.naturalPosition}
                             onChange={(e) => handlePlayerChange(index, "naturalPosition", e.target.value as Position)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="input-select text-sm"
                           >
                             {Object.entries(POSITION_LABELS).map(([value, label]) => (
                               <option key={value} value={value}>{label}</option>

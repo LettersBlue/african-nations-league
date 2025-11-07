@@ -1,7 +1,7 @@
 'use server';
 
 import { adminDb, adminAuth } from '@/lib/firebase/admin';
-import { sendRepresentativeInvitation } from '@/lib/email/resend';
+import { sendRepresentativeInvitation } from '@/lib/email/gmail';
 import { AFRICAN_COUNTRIES } from '@/types';
 import crypto from 'crypto';
 

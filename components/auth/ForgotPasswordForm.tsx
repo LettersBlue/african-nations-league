@@ -46,7 +46,7 @@ export default function ForgotPasswordForm() {
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="email" className="label-field">
           Email Address
         </label>
         <input
@@ -56,7 +56,7 @@ export default function ForgotPasswordForm() {
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={loading || success}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          className="input-field"
           placeholder="Enter your email"
         />
         <p className="mt-2 text-sm text-gray-500">
