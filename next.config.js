@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Only set turbopack.root locally to silence workspace root inference warning
-  // On Vercel, outputFileTracingRoot is set automatically, so we don't set turbopack.root
-  ...(process.env.VERCEL ? {} : {
-    turbopack: {
-      root: process.cwd(),
-    },
-  }),
+  // Don't set turbopack.root - let Next.js/Vercel handle it automatically
+  // This avoids conflicts between outputFileTracingRoot and turbopack.root
   experimental: {
     serverActions: {
       allowedOrigins: ["localhost:3000", "*.vercel.app"],
