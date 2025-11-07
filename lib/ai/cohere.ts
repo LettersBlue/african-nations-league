@@ -227,7 +227,7 @@ Generate the commentary now:
     const parsedResult = parseCommentary(commentary, match.team1.name, match.team2.name);
     
     return {
-      commentary: commentary.split('\n').filter(line => line.trim()),
+      commentary: commentary.split('\n').filter((line: string) => line.trim()),
       result: parsedResult,
     };
   } catch (error) {
