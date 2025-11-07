@@ -220,8 +220,12 @@ export const getTournament = async (tournamentId: string): Promise<Tournament | 
     
     return {
       id: tournamentDoc.id,
+      name: data.name || 'Tournament',
+      status: data.status || 'registration',
+      teamIds: teamIds,
+      currentRound: data.currentRound || null,
+      bracket: data.bracket || { quarterFinals: [], semiFinals: [], final: { matchId: '', team1Id: '', team2Id: '' } },
       ...data,
-      teamIds: teamIds, // Derived from teams collection, not stored
       createdAt: data.createdAt ? convertTimestamp(data.createdAt) : undefined,
       startedAt: data.startedAt ? convertTimestamp(data.startedAt) : undefined,
       completedAt: data.completedAt ? convertTimestamp(data.completedAt) : undefined,
