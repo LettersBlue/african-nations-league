@@ -10,12 +10,36 @@ const BracketView = dynamic(() => import("@/components/tournament/BracketView"),
 });
 
 interface BracketViewWrapperProps {
-  tournament: Tournament;
+  tournament: Tournament | null;
   teams: Team[];
   matches: any[];
 }
 
 export default function BracketViewWrapper({ tournament, teams, matches }: BracketViewWrapperProps) {
-  return <BracketView tournament={tournament} teams={teams} matches={matches} />;
+  // Provide default empty tournament structure if tournament is null
+  const defaultTournament: Tournament = {
+    id: '',
+    name: 'African Nations League',
+    status: 'registration',
+    bracket: {
+      quarterFinals: [
+        { matchId: null, team1Id: null, team2Id: null },
+        { matchId: null, team1Id: null, team2Id: null },
+        { matchId: null, team1Id: null, team2Id: null },
+        { matchId: null, team1Id: null, team2Id: null },
+      ],
+      semiFinals: [
+        { matchId: null, team1Id: null, team2Id: null },
+        { matchId: null, team1Id: null, team2Id: null },
+      ],
+      final: { matchId: null, team1Id: null, team2Id: null },
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const tournamentToUse = tournament || defaultTournament;
+
+  return <BracketView tournament={tournamentToUse} teams={teams} matches={matches} />;
 }
 

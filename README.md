@@ -4,11 +4,20 @@ A comprehensive tournament simulation platform for the African Nations League bu
 
 **INF4001N Entrance Exam 2026 Submission**
 
-## 🚀 Using the Deployed Application
+## 📦 Submission Package
 
-**Deployed URL**: [https://african-nations-league-theta.vercel.app](https://african-nations-league-theta.vercel.app)
+- **Source Code Archive**: `INF4001N_QVLAMA001_ANLeague_2026.zip` (included in the project root, follows `INF4001N_StudentNO_ANLeague_2026` naming convention). Unzip to a working folder before following the local setup steps.
+- **Database Access**: Viewer access granted in Firebase to `ammarcanani@gmail.com` and `elsje.scott@uct.ac.za`. They can sign in with their existing Google accounts—no additional passwords required.
+- **Live Deployment URL**: [https://african-nations-league-theta.vercel.app](https://african-nations-league-theta.vercel.app)
+- **Administrator Credentials**: `admin@r2g.com / 123456`
 
-The application is live and ready to use! **No setup required** - simply visit the URL above in your web browser and start using the platform.
+## 🚀 Getting Started Quickly
+
+- **Use the Hosted App**  
+  Visit the production deployment at [https://african-nations-league-theta.vercel.app](https://african-nations-league-theta.vercel.app). No installation needed.
+
+- **Run Locally from the Provided Zip**  
+  Follow the steps in the next section after extracting `INF4001N_QVLAMA001_ANLeague_2026.zip` on your machine (e.g., `~/Projects/african-nations-league`).
 
 ### Login Credentials
 
@@ -18,14 +27,6 @@ The application is live and ready to use! **No setup required** - simply visit t
 
 **Representative Accounts:**
 - Register your own account at `/register` and select "Representative" role
-
-### Database Access
-
-Firebase Firestore database access has been granted to:
-- `ammarcanani@gmail.com`
-- `elsje.scott@uct.ac.za`
-
-These accounts have been added as project members with Viewer access to the Firebase project.
 
 ## 📖 How to Run the Application
 
@@ -40,11 +41,12 @@ This section explains how to run the application locally on your machine. **Note
 
 ### Steps to Run Locally
 
-1. **Clone the repository**
+1. **Extract the source archive**
    ```bash
-   git clone https://github.com/LettersBlue/african-nations-league.git
+   unzip INF4001N_QVLAMA001_ANLeague_2026.zip -d african-nations-league
    cd african-nations-league
    ```
+   > Already working inside this repository? Skip the unzip step and continue.
 
 2. **Install dependencies**
    ```bash
@@ -100,6 +102,69 @@ This section explains how to run the application locally on your machine. **Note
 
 7. **Open in browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🧠 System Rationale & Architecture
+
+The African Nations League platform streamlines tournament management by combining automated team registration, AI-driven match commentary, and rich analytics into a single experience. The design goal is to offer administrators quick control over fixtures while enabling representatives and the public to engage with accurate, data-backed tournament updates in real time.
+
+### Core Components
+- **Next.js App Router UI**: Handles public pages, representative dashboard, and administrative console.
+- **Firebase Authentication**: Manages secure, role-based sign-in for administrators and representatives.
+- **Firestore Database**: Stores teams, players, match fixtures, commentary logs, and tournament metadata.
+- **Server Actions & API Routes**: Execute secure operations such as match simulation, team management, and tournament resets.
+- **Groq AI Commentary Service**: Primary provider for real-time play-by-play narratives.
+- **Cohere AI Backup Service**: Fallback provider ensuring commentary resilience when Groq is unavailable.
+- **Browser Text-to-Speech**: Uses the Web Speech API to turn commentary into audio for immersive match playback.
+- **Email Notifications**: Gmail SMTP integration delivers onboarding, invitations, and match summaries to stakeholders.
+
+### System Architecture Diagram
+
+```
+                           ┌───────────────────────────────┐
+                           │         Web Browser           │
+                           │   (Next.js App Router UI)     │
+                           └──────────────┬────────────────┘
+                                          │  HTTPS
+                                          ▼
+              ┌────────────────────────────────────────────────┐
+              │                 Vercel Hosting                 │
+              │  - Server Components & Route Handlers          │
+              │  - Server Actions & Edge Functions             │
+              └──────────────┬──────────────┬──────────────────┘
+                             │              │
+                 Firestore SDK│              │ External APIs
+                             │              │
+                             ▼              ▼
+              ┌────────────────────────┐   ┌────────────────────┐
+              │   Firebase Firestore   │   │   Groq AI Service   │
+              │ - Teams, Matches, Logs │   │ - Primary Commentary│
+              └───────────┬────────────┘   └───────────▲────────┘
+                          │ Admin SDK                  │
+                          ▼                            │
+              ┌────────────────────────┐              │
+              │     Firebase Auth      │              │
+              │ - Role-Based Access    │              │
+              │ - Credential Storage   │              │
+              └───────────┬────────────┘              │
+                          │ SMTP Relay                │
+                          ▼                           │
+              ┌────────────────────────┐              │
+              │   Gmail SMTP Service   │              │
+              │ - Invitations          │              │
+              │ - Notifications        │              │
+              └────────────────────────┘              │
+                                                      │
+              ┌────────────────────────┐◄─────────────┘
+              │   Cohere AI Service    │
+              │ - Commentary Backup    │
+              └────────────────────────┘
+                                          ▲
+                                          │ Commentary Stream
+                           ┌──────────────┴────────────────┐
+                           │   Browser Text-to-Speech      │
+                           │   - Match Audio Playback      │
+                           └───────────────────────────────┘
+```
 
 ## 👥 User Roles
 
@@ -158,7 +223,7 @@ Two types of match simulation available:
 - **Database**: Firebase Firestore (NoSQL)
 - **Authentication**: Firebase Auth (Email/Password + Google OAuth)
 - **AI Service**: Groq API with Llama 3.1 (for match commentary)
-- **Email**: Gmail SMTP via Nodemailer (for invitation emails - optional)
+- **Email**: Gmail SMTP via Nodemailer (for invitations and notifications)
 - **Styling**: Tailwind CSS with custom glass morphism effects
 - **Charts**: Recharts (for analytics dashboard)
 - **Tournament Bracket**: React Tournament Brackets library
@@ -174,7 +239,7 @@ The application is deployed on **Vercel**. When deployed, all environment variab
    - Go to [vercel.com](https://vercel.com)
    - Sign in with your GitHub account
    - Click "New Project"
-   - Import the GitHub repository: `LettersBlue/african-nations-league`
+   - Import the GitHub repository (or upload the unzipped folder to a new repo first if starting from the provided archive)
 
 2. **Configure Environment Variables**
    - In Vercel project settings → Environment Variables, add all variables:

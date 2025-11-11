@@ -149,36 +149,37 @@ export default async function HomePage() {
           <p className="text-description mt-2">Public matches overview</p>
         </div>
 
-        {!tournament && (
-          <div className="card card-sm">
-            <p className="text-description">No tournament found yet. Please check back later.</p>
+        <div className="space-y-6">
+          {tournament ? (
+            <div className="card card-padding flex items-center justify-between">
+              <div>
+                <h2 className="heading-tertiary">{tournament.name || "Current Tournament"}</h2>
+                <p className="text-muted mt-1">Status: {tournament.status || 'registration'}</p>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/tournament/scorers" className="text-link">Top Scorers</Link>
+                <span className="text-white/50">|</span>
+                <Link href="/tournament/history" className="text-link">History</Link>
+                <span className="text-white/50">|</span>
+                <Link href="/login" className="text-link">Login</Link>
+              </div>
+            </div>
+          ) : (
+            <div className="card card-sm">
+              <p className="text-description">No tournament found yet. Please check back later.</p>
+            </div>
+          )}
+
+          {/* Tournament Bracket Visualization - Always Visible */}
+          <div className="bg-gradient-to-br from-green-900 to-green-800 rounded-xl shadow-2xl overflow-hidden">
+            <BracketViewWrapper 
+              tournament={serializedTournament || null} 
+              teams={serializedTeams} 
+              matches={serializedMatches} 
+            />
           </div>
-        )}
 
-        {tournament && (
-          <>
-            <div className="space-y-6">
-              <div className="card card-padding flex items-center justify-between">
-                <div>
-                  <h2 className="heading-tertiary">{tournament.name || "Current Tournament"}</h2>
-                  <p className="text-muted mt-1">Status: {tournament.status || 'registration'}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Link href="/tournament/scorers" className="text-link">Top Scorers</Link>
-                  <span className="text-white/50">|</span>
-                  <Link href="/tournament/history" className="text-link">History</Link>
-                  <span className="text-white/50">|</span>
-                  <Link href="/login" className="text-link">Login</Link>
-                </div>
-              </div>
-
-            {/* Tournament Bracket Visualization */}
-            {tournament.bracket && tournament.bracket.quarterFinals && tournament.bracket.quarterFinals.length > 0 && (
-              <div className="bg-gradient-to-br from-green-900 to-green-800 rounded-xl shadow-2xl overflow-hidden">
-                <BracketViewWrapper tournament={serializedTournament} teams={serializedTeams} matches={serializedMatches} />
-              </div>
-            )}
-
+          {tournament && (
             <div className="card">
               <div className="border-b px-4 py-3">
                 <h3 className="heading-quaternary">Matches</h3>
@@ -293,9 +294,8 @@ export default async function HomePage() {
                 );
               })()}
             </div>
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

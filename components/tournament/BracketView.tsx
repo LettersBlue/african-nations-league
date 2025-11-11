@@ -92,6 +92,12 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
     return matches.find(m => m.id === matchId);
   };
 
+  // Helper to get team from teams array by teamId
+  const getTeamById = (teamId: string | null | undefined) => {
+    if (!teamId) return null;
+    return teams.find(t => t.id === teamId) || null;
+  };
+
   // Helper to get team flag from country name (from match document)
   const getTeamFlag = (countryName: string | null | undefined) => {
     if (!countryName) return null;
@@ -129,68 +135,133 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
     return formatMatchScore(match, match.result.team1Score, match.result.team2Score);
   };
 
-  const { quarterFinals, semiFinals, final } = tournament.bracket;
+  const { quarterFinals = [], semiFinals = [], final = { matchId: null, team1Id: null, team2Id: null } } = tournament.bracket || {};
+
+  // Debug logging
+  console.log('🔍 BracketView Debug Info:');
+  console.log('Tournament status:', tournament.status);
+  console.log('Teams array length:', teams.length);
+  console.log('Teams:', teams.map(t => ({ id: t.id, country: t.country })));
+  console.log('Quarter Finals from bracket:', quarterFinals);
+  console.log('Semi Finals from bracket:', semiFinals);
+  console.log('Final from bracket:', final);
+
+  // Ensure we always have 4 QF, 2 SF, and 1 Final - pad with empty entries if needed
+  const paddedQuarterFinals = [...quarterFinals];
+  while (paddedQuarterFinals.length < 4) {
+    paddedQuarterFinals.push({ matchId: null, team1Id: null, team2Id: null });
+  }
+
+  const paddedSemiFinals = [...semiFinals];
+  while (paddedSemiFinals.length < 2) {
+    paddedSemiFinals.push({ matchId: null, team1Id: null, team2Id: null });
+  }
+
+  // If tournament hasn't started and we have registered teams, assign them to bracket slots
+  // This allows teams to be visible in the bracket even before the tournament starts
+  const registeredTeamIds = teams.map(t => t.id);
+  console.log('Registered team IDs:', registeredTeamIds);
+  
+  let displayQuarterFinals = [...paddedQuarterFinals];
+  
+  if (tournament.status === 'registration' && registeredTeamIds.length > 0) {
+    // Count how many teams are already assigned in the bracket
+    const assignedTeamIds = new Set<string>();
+    paddedQuarterFinals.forEach(qf => {
+      if (qf.team1Id) assignedTeamIds.add(qf.team1Id);
+      if (qf.team2Id) assignedTeamIds.add(qf.team2Id);
+    });
+    
+    console.log('Already assigned team IDs:', Array.from(assignedTeamIds));
+    
+    // Get unassigned teams
+    const unassignedTeamIds = registeredTeamIds.filter(id => !assignedTeamIds.has(id));
+    console.log('Unassigned team IDs:', unassignedTeamIds);
+    
+    // Assign unassigned teams to empty bracket slots
+    let unassignedIndex = 0;
+    displayQuarterFinals = displayQuarterFinals.map((qf, idx) => {
+      const updated = { ...qf };
+      
+      // Fill empty team1 slot
+      if (!updated.team1Id && unassignedIndex < unassignedTeamIds.length) {
+        updated.team1Id = unassignedTeamIds[unassignedIndex];
+        console.log(`Assigning team ${unassignedTeamIds[unassignedIndex]} to QF${idx + 1} team1`);
+        unassignedIndex++;
+      }
+      
+      // Fill empty team2 slot
+      if (!updated.team2Id && unassignedIndex < unassignedTeamIds.length) {
+        updated.team2Id = unassignedTeamIds[unassignedIndex];
+        console.log(`Assigning team ${unassignedTeamIds[unassignedIndex]} to QF${idx + 1} team2`);
+        unassignedIndex++;
+      }
+      
+      return updated;
+    });
+    
+    console.log('Final displayQuarterFinals:', displayQuarterFinals);
+  } else {
+    console.log('Skipping team assignment - status:', tournament.status, 'teams count:', registeredTeamIds.length);
+  }
 
   // Convert our bracket format to the library's format
   const convertToMatches = (): MatchType[] => {
     const matchesArray: MatchType[] = [];
 
-    // Quarter Finals matches (4 matches)
-    quarterFinals.forEach((qf, idx) => {
-      const match = getMatchResult(qf.matchId);
+    // Quarter Finals matches (4 matches) - Always show all 4 matches
+    displayQuarterFinals.forEach((qf, idx) => {
+      const match = getMatchResult(qf.matchId || '');
       
       // Determine next match ID based on bracket structure
       // QF 0,1 -> SF 0, QF 2,3 -> SF 1
+      // Use placeholder IDs if matchId doesn't exist (during registration)
       let nextMatchId: string | null = null;
       if (idx < 2) {
-        nextMatchId = semiFinals[0]?.matchId || null;
+        nextMatchId = paddedSemiFinals[0]?.matchId || 'sf0-placeholder';
       } else {
-        nextMatchId = semiFinals[1]?.matchId || null;
+        nextMatchId = paddedSemiFinals[1]?.matchId || 'sf1-placeholder';
       }
       
-      // Only show teams if the match exists - if match was deleted, don't show teams
-      if (!qf.matchId || !match) {
-        // Match doesn't exist or was deleted - show TBD for both teams
-        matchesArray.push({
-          id: qf.matchId || `qf${idx}-placeholder`,
-          name: `QF${idx + 1}`,
-          nextMatchId,
-          startTime: '',
-          state: 'NO_PARTY',
-          tournamentRoundText: 'Quarter Finals',
-          participants: [
-            {
-              id: `qf${idx}-team1`,
-              name: 'TBD',
-              isWinner: false,
-              status: 'NO_PARTY',
-              resultText: null,
-            },
-            {
-              id: `qf${idx}-team2`,
-              name: 'TBD',
-              isWinner: false,
-              status: 'NO_PARTY',
-              resultText: null,
-            },
-          ],
-          match: null,
-        });
-        return;
+      // Get team data - prioritize match data, then bracket teamIds, then TBD
+      let team1Id: string | null = null;
+      let team2Id: string | null = null;
+      let team1Name: string | null = null;
+      let team2Name: string | null = null;
+      
+      if (match) {
+        // Match exists - use match data (source of truth)
+        team1Id = match.team1?.id || null;
+        team2Id = match.team2?.id || null;
+        team1Name = match.team1?.name || null;
+        team2Name = match.team2?.name || null;
+        console.log(`QF${idx + 1}: Using match data - team1: ${team1Name}, team2: ${team2Name}`);
+      } else if (qf.team1Id || qf.team2Id) {
+        // No match but teams assigned in bracket - look up from teams array
+        console.log(`QF${idx + 1}: Looking up teams from bracket - team1Id: ${qf.team1Id}, team2Id: ${qf.team2Id}`);
+        if (qf.team1Id) {
+          const team1 = getTeamById(qf.team1Id);
+          team1Id = qf.team1Id;
+          team1Name = team1?.country || null;
+          console.log(`QF${idx + 1}: Found team1:`, team1 ? team1.country : 'NOT FOUND');
+        }
+        if (qf.team2Id) {
+          const team2 = getTeamById(qf.team2Id);
+          team2Id = qf.team2Id;
+          team2Name = team2?.country || null;
+          console.log(`QF${idx + 1}: Found team2:`, team2 ? team2.country : 'NOT FOUND');
+        }
+      } else {
+        console.log(`QF${idx + 1}: No match and no teamIds - showing TBD`);
       }
       
-      // Match exists - get team data from match document (source of truth)
-      const team1Name = match.team1?.name || null;
-      const team2Name = match.team2?.name || null;
-      const team1Id = match.team1?.id || null;
-      const team2Id = match.team2?.id || null;
-      const qfWon = match?.result ? isWinner(match, team1Id) : false;
+      const qfWon = match?.result ? isWinner(match, team1Id || '') : false;
 
       matchesArray.push({
-        id: qf.matchId,
+        id: qf.matchId || `qf${idx}-placeholder`,
         name: `QF${idx + 1}`,
         nextMatchId,
-        startTime: '', // Don't show dates in the bracket
+        startTime: '',
         state: match?.status === 'completed' ? 'PLAYED' : (team1Id && team2Id ? 'NO_SHOW' : 'NO_PARTY'),
         tournamentRoundText: 'Quarter Finals',
         participants: [
@@ -209,58 +280,47 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
             resultText: match?.result && team2Id ? match.result.team2Score?.toString() : null,
           },
         ],
-        match: match, // Pass match data for penalty info
+        match: match || null, // Pass match data for penalty info
       });
     });
 
-    // Semi Finals matches (2 matches)
-    semiFinals.forEach((sf, idx) => {
-      const match = getMatchResult(sf.matchId);
+    // Semi Finals matches (2 matches) - Always show both matches
+    paddedSemiFinals.forEach((sf, idx) => {
+      const match = getMatchResult(sf.matchId || '');
       
-      // Only show teams if the match exists - if match was deleted, don't show teams
-      // Also check if matchId exists and is not empty
-      if (!sf.matchId || !match) {
-        // Match doesn't exist or was deleted - show TBD for both teams
-        matchesArray.push({
-          id: sf.matchId || `sf${idx}-placeholder`,
-          name: `SF${idx + 1}`,
-          nextMatchId: final.matchId,
-          startTime: '',
-          state: 'NO_PARTY',
-          tournamentRoundText: 'Semi Finals',
-          participants: [
-            {
-              id: `sf${idx}-team1`,
-              name: 'TBD',
-              isWinner: false,
-              status: 'NO_PARTY',
-              resultText: null,
-            },
-            {
-              id: `sf${idx}-team2`,
-              name: 'TBD',
-              isWinner: false,
-              status: 'NO_PARTY',
-              resultText: null,
-            },
-          ],
-          match: null,
-        });
-        return;
+      // Get team data - prioritize match data, then bracket teamIds, then TBD
+      let team1Id: string | null = null;
+      let team2Id: string | null = null;
+      let team1Name: string | null = null;
+      let team2Name: string | null = null;
+      
+      if (match) {
+        // Match exists - use match data (source of truth)
+        team1Id = match.team1?.id || null;
+        team2Id = match.team2?.id || null;
+        team1Name = match.team1?.name || null;
+        team2Name = match.team2?.name || null;
+      } else if (sf.team1Id || sf.team2Id) {
+        // No match but teams assigned in bracket - look up from teams array
+        if (sf.team1Id) {
+          const team1 = getTeamById(sf.team1Id);
+          team1Id = sf.team1Id;
+          team1Name = team1?.country || null;
+        }
+        if (sf.team2Id) {
+          const team2 = getTeamById(sf.team2Id);
+          team2Id = sf.team2Id;
+          team2Name = team2?.country || null;
+        }
       }
       
-      // Match exists - get team data from match document (source of truth)
-      const team1Name = match.team1?.name || null;
-      const team2Name = match.team2?.name || null;
-      const team1Id = match.team1?.id || null;
-      const team2Id = match.team2?.id || null;
-      const sfWon = match?.result ? isWinner(match, team1Id) : false;
+      const sfWon = match?.result ? isWinner(match, team1Id || '') : false;
 
       matchesArray.push({
-        id: sf.matchId,
+        id: sf.matchId || `sf${idx}-placeholder`,
         name: `SF${idx + 1}`,
-        nextMatchId: final.matchId,
-        startTime: '', // Don't show dates in the bracket
+        nextMatchId: final.matchId || 'final-placeholder',
+        startTime: '',
         state: match?.status === 'completed' ? 'PLAYED' : (team1Id && team2Id ? 'NO_SHOW' : 'NO_PARTY'),
         tournamentRoundText: 'Semi Finals',
         participants: [
@@ -279,75 +339,66 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
             resultText: match?.result && team2Id ? match.result.team2Score?.toString() : null,
           },
         ],
-        match: match, // Pass match data for penalty info
+        match: match || null, // Pass match data for penalty info
       });
     });
 
-    // Final match
-    const finalMatch = getMatchResult(final.matchId);
+    // Final match - Always show
+    const finalMatch = getMatchResult(final.matchId || '');
     
-    // Only show teams if the match exists - if match was deleted, don't show teams
-    if (!final.matchId || !finalMatch) {
-      // Match doesn't exist or was deleted - show TBD for both teams
-      matchesArray.push({
-        id: final.matchId || 'final-placeholder',
-        name: 'Final',
-        nextMatchId: null, // No next match - winner is positioned absolutely
-        startTime: '',
-        state: 'NO_PARTY',
-        tournamentRoundText: 'Final',
-        participants: [
-          {
-            id: 'final-team1',
-            name: 'TBD',
-            isWinner: false,
-            status: 'NO_PARTY',
-            resultText: null,
-          },
-          {
-            id: 'final-team2',
-            name: 'TBD',
-            isWinner: false,
-            status: 'NO_PARTY',
-            resultText: null,
-          },
-        ],
-        match: null,
-      });
-    } else {
-      // Match exists - get team data from match document (source of truth)
-      const team1Name = finalMatch.team1?.name || null;
-      const team2Name = finalMatch.team2?.name || null;
-      const team1Id = finalMatch.team1?.id || null;
-      const team2Id = finalMatch.team2?.id || null;
-      const finalWon = finalMatch?.result ? isWinner(finalMatch, team1Id) : false;
-
-      matchesArray.push({
-        id: final.matchId,
-        name: 'Final',
-        nextMatchId: null, // No next match - winner is positioned absolutely
-        startTime: '', // Don't show dates in the bracket
-        state: finalMatch?.status === 'completed' ? 'PLAYED' : (team1Id && team2Id ? 'NO_SHOW' : 'NO_PARTY'),
-        tournamentRoundText: 'Final',
-        participants: [
-          {
-            id: team1Id || 'final-team1',
-            name: team1Name ? `${getTeamFlag(team1Name) || ''} ${team1Name}` : 'TBD',
-            isWinner: finalWon,
-            status: team1Id ? 'PLAYED' : 'NO_PARTY',
-            resultText: finalMatch?.result && team1Id ? finalMatch.result.team1Score?.toString() : null,
-          },
-          {
-            id: team2Id || 'final-team2',
-            name: team2Name ? `${getTeamFlag(team2Name) || ''} ${team2Name}` : 'TBD',
-            isWinner: finalMatch?.result ? !finalWon : false,
-            status: team2Id ? 'PLAYED' : 'NO_PARTY',
-            resultText: finalMatch?.result && team2Id ? finalMatch.result.team2Score?.toString() : null,
-          },
-        ],
-        match: finalMatch, // Pass match data for penalty info
-      });
+    // Get team data - prioritize match data, then bracket teamIds, then TBD
+    let team1Id: string | null = null;
+    let team2Id: string | null = null;
+    let team1Name: string | null = null;
+    let team2Name: string | null = null;
+    
+    if (finalMatch) {
+      // Match exists - use match data (source of truth)
+      team1Id = finalMatch.team1?.id || null;
+      team2Id = finalMatch.team2?.id || null;
+      team1Name = finalMatch.team1?.name || null;
+      team2Name = finalMatch.team2?.name || null;
+    } else if (final.team1Id || final.team2Id) {
+      // No match but teams assigned in bracket - look up from teams array
+      if (final.team1Id) {
+        const team1 = getTeamById(final.team1Id);
+        team1Id = final.team1Id;
+        team1Name = team1?.country || null;
+      }
+      if (final.team2Id) {
+        const team2 = getTeamById(final.team2Id);
+        team2Id = final.team2Id;
+        team2Name = team2?.country || null;
+      }
     }
+    
+    const finalWon = finalMatch?.result ? isWinner(finalMatch, team1Id || '') : false;
+
+    matchesArray.push({
+      id: final.matchId || 'final-placeholder',
+      name: 'Final',
+      nextMatchId: null, // No next match - winner is positioned absolutely
+      startTime: '',
+      state: finalMatch?.status === 'completed' ? 'PLAYED' : (team1Id && team2Id ? 'NO_SHOW' : 'NO_PARTY'),
+      tournamentRoundText: 'Final',
+      participants: [
+        {
+          id: team1Id || 'final-team1',
+          name: team1Name ? `${getTeamFlag(team1Name) || ''} ${team1Name}` : 'TBD',
+          isWinner: finalWon,
+          status: team1Id ? 'PLAYED' : 'NO_PARTY',
+          resultText: finalMatch?.result && team1Id ? finalMatch.result.team1Score?.toString() : null,
+        },
+        {
+          id: team2Id || 'final-team2',
+          name: team2Name ? `${getTeamFlag(team2Name) || ''} ${team2Name}` : 'TBD',
+          isWinner: finalMatch?.result ? !finalWon : false,
+          status: team2Id ? 'PLAYED' : 'NO_PARTY',
+          resultText: finalMatch?.result && team2Id ? finalMatch.result.team2Score?.toString() : null,
+        },
+      ],
+      match: finalMatch || null, // Pass match data for penalty info
+    });
 
     // Winner match is now rendered separately with absolute positioning
     // No need to add it to the bracket matches array
@@ -356,6 +407,31 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
   };
 
   const bracketMatches = convertToMatches();
+  
+  // Debug: Log what's being passed to the bracket
+  console.log('📊 bracketMatches array:', bracketMatches);
+  console.log('📊 bracketMatches length:', bracketMatches.length);
+  console.log('📊 Expected: 7 matches (4 QF + 2 SF + 1 Final)');
+  
+  const qfMatches = bracketMatches.filter(m => m.tournamentRoundText === 'Quarter Finals');
+  const sfMatches = bracketMatches.filter(m => m.tournamentRoundText === 'Semi Finals');
+  const finalMatches = bracketMatches.filter(m => m.tournamentRoundText === 'Final');
+  
+  console.log(`📊 QF matches: ${qfMatches.length}/4`);
+  console.log(`📊 SF matches: ${sfMatches.length}/2`);
+  console.log(`📊 Final matches: ${finalMatches.length}/1`);
+  
+  bracketMatches.forEach((m: any, idx: number) => {
+    const participants = m.participants?.map((p: any) => p.name) || [];
+    console.log(`Match ${idx + 1} (${m.name || m.tournamentRoundText}):`, {
+      id: m.id,
+      participants: participants,
+      participantCount: participants.length,
+      state: m.state,
+      tournamentRoundText: m.tournamentRoundText,
+      hasBothParticipants: participants.length === 2
+    });
+  });
 
   // Create a map of match IDs to match data for quick lookup
   const matchDataMap = new Map<string, any>();
