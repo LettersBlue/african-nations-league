@@ -34,8 +34,8 @@ export default function BracketViewWrapper({ tournament, teams, matches }: Brack
       ],
       final: { matchId: null, team1Id: null, team2Id: null },
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    currentRound: null,
+    teamIds: [],
   };
 
   const tournamentToUse = tournament || defaultTournament;

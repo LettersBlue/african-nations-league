@@ -76,21 +76,21 @@ export interface Tournament {
   currentRound: MatchRound | null;
   bracket: {
     quarterFinals: Array<{
-      matchId: string;
-      team1Id: string;
-      team2Id: string;
+      matchId: string | null;
+      team1Id: string | null;
+      team2Id: string | null;
       winnerId?: string;
     }>; // 4 matches
     semiFinals: Array<{
-      matchId: string;
-      team1Id: string;
-      team2Id: string;
+      matchId: string | null;
+      team1Id: string | null;
+      team2Id: string | null;
       winnerId?: string;
     }>; // 2 matches
     final: {
-      matchId: string;
-      team1Id: string;
-      team2Id: string;
+      matchId: string | null;
+      team1Id: string | null;
+      team2Id: string | null;
       winnerId?: string;
     }; // 1 match
   };

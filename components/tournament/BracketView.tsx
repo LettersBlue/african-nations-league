@@ -88,7 +88,8 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
   
   
   // Helper to get match from database by matchId
-  const getMatchResult = (matchId: string) => {
+  const getMatchResult = (matchId: string | null | undefined) => {
+    if (!matchId) return undefined;
     return matches.find(m => m.id === matchId);
   };
 
@@ -211,7 +212,7 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
 
     // Quarter Finals matches (4 matches) - Always show all 4 matches
     displayQuarterFinals.forEach((qf, idx) => {
-      const match = getMatchResult(qf.matchId || '');
+      const match = getMatchResult(qf.matchId);
       
       // Determine next match ID based on bracket structure
       // QF 0,1 -> SF 0, QF 2,3 -> SF 1
@@ -286,7 +287,7 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
 
     // Semi Finals matches (2 matches) - Always show both matches
     paddedSemiFinals.forEach((sf, idx) => {
-      const match = getMatchResult(sf.matchId || '');
+      const match = getMatchResult(sf.matchId);
       
       // Get team data - prioritize match data, then bracket teamIds, then TBD
       let team1Id: string | null = null;
@@ -344,7 +345,7 @@ export default function BracketView({ tournament, teams, matches }: BracketViewP
     });
 
     // Final match - Always show
-    const finalMatch = getMatchResult(final.matchId || '');
+    const finalMatch = getMatchResult(final.matchId);
     
     // Get team data - prioritize match data, then bracket teamIds, then TBD
     let team1Id: string | null = null;
